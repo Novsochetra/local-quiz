@@ -14,6 +14,8 @@ CREATE TABLE IF NOT EXISTS quizzes (
   description TEXT,
   created_by TEXT NOT NULL,
   code TEXT UNIQUE,
+  auto_advance_enabled INTEGER NOT NULL DEFAULT 0,
+  auto_advance_delay INTEGER NOT NULL DEFAULT 5,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (created_by) REFERENCES users(id)
 );

@@ -457,12 +457,6 @@
   color: var(--cyan);
 }
 
-/* Host auto-advance controls */
-.auto-advance-card {
-  max-width: 420px;
-  margin: 1.5rem auto 0;
-}
-
 .toggle-row {
   display: flex;
   align-items: center;

@@ -15,6 +15,7 @@ let currentPin = null;
 let currentQuestion = null;
 let autoAdvanceTimer = null;
 let autoAdvanceCountdownInterval = null;
+let currentQuizAutoAdvance = { enabled: false, delay: 5 };
 
 function switchTo(screenName) {
   Object.values(screens).forEach((s) => s.classList.add('hidden'));
@@ -156,6 +157,8 @@ function renderQuizSettings(quiz) {
   $('#settings-quiz-id').value = quiz.id;
   $('#settings-quiz-title').value = quiz.title;
   $('#settings-quiz-description').value = quiz.description || '';
+  $('#settings-auto-advance-toggle').checked = !!quiz.auto_advance_enabled;
+  $('#settings-auto-advance-seconds').value = quiz.auto_advance_delay ?? 5;
 
   const list = $('#settings-questions-list');
   if (!quiz.questions || quiz.questions.length === 0) {
@@ -206,6 +209,10 @@ async function saveQuizSettings() {
 
   const title = $('#settings-quiz-title').value.trim();
   const description = $('#settings-quiz-description').value.trim();
+  const autoAdvance = {
+    enabled: isSettingsAutoAdvanceEnabled(),
+    delay: getSettingsAutoAdvanceDelay(),
+  };
 
   if (!title) {
     showError('#quiz-settings-error', 'Quiz title is required');
@@ -235,7 +242,7 @@ async function saveQuizSettings() {
   try {
     await api(`/api/quizzes/${currentSettingsQuiz.id}`, {
       method: 'PUT',
-      body: JSON.stringify({ title, description, questions }),
+      body: JSON.stringify({ title, description, autoAdvance, questions }),
     });
 
     $('#quiz-settings-success').textContent = 'Quiz settings saved successfully!';
@@ -278,14 +285,22 @@ function renderLobby(players) {
   });
 }
 
-function getAutoAdvanceDelay() {
-  const input = $('#auto-advance-seconds');
+function getSettingsAutoAdvanceDelay() {
+  const input = $('#settings-auto-advance-seconds');
   const value = parseInt(input.value, 10);
   return Math.min(15, Math.max(3, Number.isNaN(value) ? 5 : value));
 }
 
+function isSettingsAutoAdvanceEnabled() {
+  return $('#settings-auto-advance-toggle').checked;
+}
+
 function isAutoAdvanceEnabled() {
-  return $('#auto-advance-toggle').checked;
+  return currentQuizAutoAdvance.enabled;
+}
+
+function getAutoAdvanceDelay() {
+  return currentQuizAutoAdvance.delay;
 }
 
 function cancelAutoAdvance() {
@@ -418,19 +433,6 @@ $('#start-game-btn').addEventListener('click', () => {
   socket.emit('host:start-game');
 });
 $('#next-question-btn').addEventListener('click', emitNextQuestion);
-$('#auto-advance-toggle').addEventListener('change', () => {
-  if (isAutoAdvanceEnabled()) {
-    startAutoAdvance();
-  } else {
-    cancelAutoAdvance();
-  }
-});
-$('#auto-advance-seconds').addEventListener('change', () => {
-  if (isAutoAdvanceEnabled() && (autoAdvanceTimer || autoAdvanceCountdownInterval)) {
-    cancelAutoAdvance();
-    startAutoAdvance();
-  }
-});
 $('#quiz-settings-close').addEventListener('click', closeQuizSettings);
 $('#quiz-settings-cancel').addEventListener('click', closeQuizSettings);
 $('#quiz-settings-save').addEventListener('click', saveQuizSettings);
@@ -441,8 +443,12 @@ $('#quiz-settings-modal').addEventListener('click', (e) => {
 });
 
 // Socket events
-socket.on('host:session-created', ({ pin, quizTitle }) => {
+socket.on('host:session-created', ({ pin, quizTitle, autoAdvance }) => {
   currentPin = pin;
+  currentQuizAutoAdvance = {
+    enabled: autoAdvance?.enabled ?? false,
+    delay: autoAdvance?.delay ?? 5,
+  };
   $('#lobby-pin').textContent = pin;
   $('#lobby-quiz-title').textContent = quizTitle;
   renderLobby([]);

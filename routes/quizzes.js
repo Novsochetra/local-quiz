@@ -88,7 +88,12 @@ router.put('/:id', authenticateHost, (req, res, next) => {
       throw err;
     }
 
-    updateQuiz(quizId, { title, description });
+    updateQuiz(quizId, {
+      title,
+      description,
+      autoAdvanceEnabled: req.body.autoAdvance?.enabled,
+      autoAdvanceDelay: req.body.autoAdvance?.delay,
+    });
 
     for (const q of questions) {
       const timeLimit = parseInt(q.timeLimitSec, 10);

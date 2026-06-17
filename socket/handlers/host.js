@@ -19,6 +19,10 @@ export function registerHostHandlers(socket, io) {
         sessionId: session.id,
         pin: session.pin,
         quizTitle: quiz.title,
+        autoAdvance: {
+          enabled: !!quiz.auto_advance_enabled,
+          delay: quiz.auto_advance_delay ?? 5,
+        },
       });
 
       io.to(session.pin).emit('server:lobby-update', {
