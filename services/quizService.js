@@ -60,6 +60,7 @@ function validateQuestion(q, index) {
   }
   if (!Array.isArray(q.options) || q.options.length < 2) {
     errors.push(`Question ${index + 1}: at least 2 options required`);
+    return errors;
   }
 
   const correctCount = q.options.filter((o) => o.isCorrect).length;
@@ -80,11 +81,15 @@ function validateQuestion(q, index) {
 
 export function validateQuizJson(data) {
   const errors = [];
+  if (!data || typeof data !== 'object') {
+    return ['Invalid quiz data'];
+  }
   if (!data.title || typeof data.title !== 'string') {
     errors.push('Quiz title is required');
   }
   if (!Array.isArray(data.questions) || data.questions.length === 0) {
     errors.push('Quiz must contain at least one question');
+    return errors;
   }
 
   data.questions.forEach((q, index) => {
