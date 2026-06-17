@@ -33,6 +33,11 @@ export function registerPlayerHandlers(socket, io) {
         players: session.getLeaderboard(),
         pin,
       });
+
+      io.to(pin).emit('server:player-joined', {
+        nickname: player.nickname,
+        pin,
+      });
     } catch (err) {
       socket.emit('player:join-error', { message: err.message });
     }

@@ -1,6 +1,7 @@
 import { $, api, showScreen } from './utils.js';
 import { getSocket } from './socket.js';
 import { initAudio, playSound } from './audio.js';
+import { celebrate } from './confetti.js';
 
 const socket = getSocket();
 
@@ -459,6 +460,12 @@ socket.on('server:lobby-update', ({ players, pin }) => {
   if (currentPin === pin) {
     renderLobby(players);
     playSound('join');
+  }
+});
+
+socket.on('server:player-joined', ({ nickname, pin }) => {
+  if (currentPin === pin && !screens.lobby.classList.contains('hidden')) {
+    celebrate(nickname);
   }
 });
 
