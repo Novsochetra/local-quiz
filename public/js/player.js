@@ -158,7 +158,6 @@ function renderQuestion(question) {
   }
 
   const container = $('#options-container');
-  const isMultiSelect = question.type === 'multiple_select';
 
   let html = question.options
     .map(
@@ -168,34 +167,26 @@ function renderQuestion(question) {
     )
     .join('');
 
-  if (isMultiSelect) {
-    html += `
-      <button id="submit-multi-btn" class="cyber-btn large" style="grid-column: 1 / -1;">
-        Submit Answer
-      </button>
-    `;
-  }
+  html += `
+    <button id="submit-answer-btn" class="cyber-btn large" style="grid-column: 1 / -1;">
+      Submit Answer
+    </button>
+  `;
 
   container.innerHTML = html;
-
-  if (!isMultiSelect) {
-    container.querySelectorAll('.option-btn').forEach((btn) => {
-      btn.addEventListener('click', () => submitAnswer(btn.dataset.id));
-    });
-  }
 
   $('#answer-feedback').classList.add('hidden');
   startTimer(question.timeLimit);
 }
 
-function submitAnswer(optionId) {
+function submitAnswer() {
   if (answered || !currentQuestion) return;
   answered = true;
 
   clearInterval(timerInterval);
 
-  const isMultiSelect = currentQuestion.type === 'multiple_select';
-  const selected = isMultiSelect ? collectMultiSelect() : [optionId];
+  const selected = collectSelectedOptions();
+  if (selected.length === 0) return;
 
   socket.emit('player:answer', {
     questionIndex: currentQuestion.index,
@@ -210,12 +201,25 @@ function submitAnswer(optionId) {
       btn.classList.add('selected');
     }
   });
+
+  const submitButton = $('#submit-answer-btn');
+  if (submitButton) submitButton.disabled = true;
 }
 
-function collectMultiSelect() {
+function collectSelectedOptions() {
   return Array.from($('#options-container').querySelectorAll('.option-btn.selected')).map(
     (btn) => btn.dataset.id
   );
+}
+
+function selectSingleOption(btn) {
+  if (answered) return;
+  $('#options-container')
+    .querySelectorAll('.option-btn')
+    .forEach((b) => {
+      b.classList.remove('selected');
+    });
+  btn.classList.add('selected');
 }
 
 function toggleMultiSelect(btn) {
@@ -223,11 +227,11 @@ function toggleMultiSelect(btn) {
   btn.classList.toggle('selected');
 }
 
-function submitMultiSelect() {
+function submitSelected() {
   if (answered) return;
-  const selected = collectMultiSelect();
+  const selected = collectSelectedOptions();
   if (selected.length === 0) return;
-  submitAnswer(null);
+  submitAnswer();
 }
 
 function renderAnswerResult(result) {
@@ -352,10 +356,10 @@ $('#nickname-input').addEventListener('keydown', (e) => {
 
 $('#options-container').addEventListener('click', (e) => {
   const btn = e.target.closest('.option-btn');
-  const submitBtn = e.target.closest('#submit-multi-btn');
+  const submitBtn = e.target.closest('#submit-answer-btn');
 
   if (submitBtn) {
-    submitMultiSelect();
+    submitSelected();
     return;
   }
 
@@ -363,6 +367,8 @@ $('#options-container').addEventListener('click', (e) => {
 
   if (currentQuestion.type === 'multiple_select') {
     toggleMultiSelect(btn);
+  } else {
+    selectSingleOption(btn);
   }
 });
 
