@@ -145,9 +145,7 @@ export class QuestionEngine {
       correctOptionIds: correctIds,
     });
 
-    this.timer = setTimeout(() => {
-      this.showLeaderboard();
-    }, ANSWER_REVEAL_DELAY_MS);
+    this.showLeaderboard();
   }
 
   showLeaderboard() {

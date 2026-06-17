@@ -262,6 +262,20 @@ function renderLeaderboard({ leaderboard, currentQuestionIndex, totalQuestions }
       ? `QUESTION ${currentQuestionIndex + 1} / ${totalQuestions}`
       : '';
 
+  const list = $('#result-leaderboard');
+  list.innerHTML = leaderboard
+    .slice(0, 10)
+    .map(
+      (p) => `
+      <div class="leaderboard-item ${p.id === playerId ? 'current-player' : ''}">
+        <div class="leaderboard-rank">${p.rank}</div>
+        <div class="leaderboard-name">${p.nickname}</div>
+        <div class="leaderboard-score">${p.score.toLocaleString()}</div>
+      </div>
+    `
+    )
+    .join('');
+
   resetResultTerminal();
 }
 

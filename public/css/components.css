@@ -621,6 +621,12 @@
   }
 }
 
+#result-leaderboard .leaderboard-item.current-player {
+  background: rgba(0, 243, 255, 0.08);
+  border-color: var(--cyan);
+  box-shadow: 0 0 15px rgba(0, 243, 255, 0.15);
+}
+
 .delete-quiz-btn {
   display: inline-flex;
   align-items: center;
