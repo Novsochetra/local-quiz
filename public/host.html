@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Host — Local Quiz</title>
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/css/cyberpunk.css" />
+    <link rel="stylesheet" href="/css/animations.css" />
+    <link rel="stylesheet" href="/css/components.css" />
+  </head>
+  <body>
+    <div id="app">
+      <section id="login-screen" class="screen active">
+        <div class="container" style="padding-top: 4rem">
+          <header class="header">
+            <h1 class="cyber-title" data-text="HOST LOGIN">HOST LOGIN</h1>
+            <p class="cyber-subtitle">Authorized personnel only</p>
+          </header>
+
+          <div class="cyber-card" style="max-width: 420px; margin: 0 auto">
+            <div id="login-error" class="error-message hidden"></div>
+            <div class="form-group">
+              <label>Username</label>
+              <input type="text" id="host-username" class="cyber-input" value="host" />
+            </div>
+            <div class="form-group">
+              <label>Password</label>
+              <input type="password" id="host-password" class="cyber-input" value="host1234" />
+            </div>
+            <button id="login-btn" class="cyber-btn large" style="width: 100%">ENTER</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="dashboard-screen" class="screen">
+        <div class="container container-wide" style="padding-top: 2rem">
+          <header class="header">
+            <h1 class="cyber-title" data-text="HOST DASHBOARD">HOST DASHBOARD</h1>
+            <p class="cyber-subtitle">Select or import a quiz module</p>
+          </header>
+
+          <div class="cyber-card">
+            <h3>Import Quiz (JSON)</h3>
+            <div id="import-error" class="error-message hidden"></div>
+            <div id="import-success" class="success-message hidden"></div>
+            <div class="form-group">
+              <textarea
+                id="quiz-json"
+                class="cyber-input"
+                rows="8"
+                placeholder="Paste quiz JSON here..."
+              ></textarea>
+            </div>
+            <div style="display: flex; gap: 12px; justify-content: flex-end">
+              <button id="logout-btn" class="cyber-btn">LOGOUT</button>
+              <button id="import-btn" class="cyber-btn">IMPORT</button>
+            </div>
+          </div>
+
+          <div class="cyber-card">
+            <h3>Available Quizzes</h3>
+            <div id="quiz-list" class="quiz-list">
+              <p style="color: var(--text-dim); text-align: center; padding: 24px 0">
+                Loading quizzes...
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="lobby-screen" class="screen">
+        <div class="container" style="padding-top: 2rem; text-align: center">
+          <header class="header">
+            <h1 class="cyber-title" data-text="GAME LOBBY">GAME LOBBY</h1>
+            <p class="cyber-subtitle">Share this PIN with players</p>
+          </header>
+
+          <div id="lobby-pin" class="pin-display" style="max-width: 420px; margin: 0 auto 1rem">
+            ------
+          </div>
+          <p id="lobby-quiz-title" style="color: var(--text-dim); margin-bottom: 2rem"></p>
+
+          <div class="cyber-card" style="text-align: left">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 1rem;
+              "
+            >
+              <h3 style="margin: 0">Players (<span id="player-count">0</span>)</h3>
+              <button id="start-game-btn" class="cyber-btn">START GAME</button>
+            </div>
+            <div id="lobby-player-list" class="player-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="game-screen" class="screen">
+        <div class="container container-wide" style="padding-top: 2rem">
+          <div id="host-question-view" class="hidden">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 1rem;
+              "
+            >
+              <h3 id="host-question-number" style="margin: 0; color: var(--text-dim)"></h3>
+              <div id="host-timer" class="countdown-number" style="font-size: 2.5rem">0</div>
+            </div>
+            <div class="cyber-card" style="margin-bottom: 1rem">
+              <h2
+                id="host-question-text"
+                style="font-size: 1.4rem; text-align: center; margin: 0"
+              ></h2>
+            </div>
+            <div id="host-options" class="options-grid"></div>
+          </div>
+
+          <div id="host-leaderboard-view" class="hidden">
+            <header class="header">
+              <h1 class="cyber-title" data-text="LEADERBOARD">LEADERBOARD</h1>
+            </header>
+            <div id="host-leaderboard" class="leaderboard-list"></div>
+            <div style="text-align: center; margin-top: 2rem">
+              <button id="next-question-btn" class="cyber-btn large">NEXT QUESTION</button>
+            </div>
+          </div>
+
+          <div id="host-results-view" class="hidden">
+            <header class="header">
+              <h1 class="cyber-title" data-text="FINAL RESULTS">FINAL RESULTS</h1>
+            </header>
+            <div id="host-podium" class="podium"></div>
+            <div id="host-final-leaderboard" class="leaderboard-list"></div>
+            <div style="text-align: center; margin-top: 2rem">
+              <a href="/host" class="cyber-btn large">BACK TO DASHBOARD</a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script type="module" src="/js/host.js"></script>
+  </body>
+</html>

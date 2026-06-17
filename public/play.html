@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Play — Local Quiz</title>
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/css/cyberpunk.css" />
+    <link rel="stylesheet" href="/css/animations.css" />
+    <link rel="stylesheet" href="/css/components.css" />
+  </head>
+  <body>
+    <div id="app">
+      <section id="join-screen" class="screen active">
+        <div class="container" style="padding-top: 4rem">
+          <header class="header">
+            <h1 class="cyber-title" data-text="JOIN GAME">JOIN GAME</h1>
+            <p class="cyber-subtitle">Enter session credentials</p>
+          </header>
+
+          <div class="cyber-card" style="max-width: 420px; margin: 0 auto">
+            <div id="join-error" class="error-message hidden"></div>
+            <div class="form-group">
+              <label>Game PIN</label>
+              <input
+                type="text"
+                id="pin-input"
+                class="cyber-input"
+                placeholder="123456"
+                maxlength="6"
+                inputmode="numeric"
+              />
+            </div>
+            <div class="form-group">
+              <label>Nickname</label>
+              <input
+                type="text"
+                id="nickname-input"
+                class="cyber-input"
+                placeholder="NeonRider"
+                maxlength="20"
+              />
+            </div>
+            <button id="join-btn" class="cyber-btn large" style="width: 100%">JOIN</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="waiting-screen" class="screen">
+        <div class="container" style="padding-top: 4rem; text-align: center">
+          <header class="header">
+            <h1 class="cyber-title" data-text="WAITING ROOM">WAITING ROOM</h1>
+            <p class="cyber-subtitle">Session standby</p>
+          </header>
+
+          <p
+            id="waiting-nickname"
+            style="
+              color: var(--cyan);
+              font-size: 1.2rem;
+              margin-bottom: 2rem;
+              text-shadow: 0 0 10px var(--cyan);
+            "
+          ></p>
+          <div class="cyber-card" style="max-width: 420px; margin: 0 auto">
+            <p style="color: var(--text-dim)">Waiting for the host to start the game...</p>
+            <div
+              class="pulse-glow"
+              style="margin-top: 2rem; padding: 1rem; border: 1px solid var(--border)"
+            >
+              <span style="color: var(--yellow); text-shadow: 0 0 8px var(--yellow)">
+                PIN: <span id="waiting-pin"></span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="question-screen" class="screen">
+        <div class="container" style="padding-top: 1rem">
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 0.5rem;
+            "
+          >
+            <span id="question-counter" style="color: var(--text-dim)"></span>
+            <span
+              id="question-points"
+              style="color: var(--yellow); text-shadow: 0 0 8px var(--yellow)"
+            ></span>
+          </div>
+          <div class="timer-bar">
+            <div id="timer-fill" class="timer-bar-fill" style="width: 100%"></div>
+          </div>
+          <div
+            id="question-timer"
+            class="countdown-number"
+            style="font-size: 2.5rem; margin-bottom: 1rem"
+          >
+            0
+          </div>
+
+          <div class="cyber-card" style="margin-bottom: 1rem">
+            <h2 id="question-text" style="font-size: 1.3rem; text-align: center; margin: 0"></h2>
+            <img
+              id="question-image"
+              class="hidden"
+              style="max-width: 100%; margin-top: 1rem; border: 1px solid var(--border)"
+              alt="Question media"
+            />
+          </div>
+
+          <div id="options-container" class="options-grid"></div>
+          <div
+            id="answer-feedback"
+            class="hidden"
+            style="text-align: center; margin-top: 1.5rem; font-size: 1.2rem; font-weight: 700"
+          ></div>
+        </div>
+      </section>
+
+      <section id="result-screen" class="screen">
+        <div class="container" style="padding-top: 4rem; text-align: center">
+          <header class="header">
+            <h1 class="cyber-title" data-text="RESULTS">RESULTS</h1>
+          </header>
+          <div id="result-message" style="font-size: 1.5rem; margin: 2rem 0"></div>
+          <div id="result-score" style="font-size: 1.2rem; color: var(--text-dim)"></div>
+          <div
+            id="result-rank"
+            style="
+              font-size: 1.2rem;
+              color: var(--cyan);
+              margin-top: 1rem;
+              text-shadow: 0 0 8px var(--cyan);
+            "
+          ></div>
+        </div>
+      </section>
+
+      <section id="game-over-screen" class="screen">
+        <div class="container" style="padding-top: 2rem; text-align: center">
+          <header class="header">
+            <h1 class="cyber-title" data-text="GAME OVER">GAME OVER</h1>
+          </header>
+          <div id="player-podium" class="podium"></div>
+          <div
+            id="player-final-rank"
+            style="
+              margin: 2rem 0;
+              font-size: 1.5rem;
+              color: var(--cyan);
+              text-shadow: 0 0 8px var(--cyan);
+            "
+          ></div>
+          <a href="/play" class="cyber-btn large">PLAY AGAIN</a>
+        </div>
+      </section>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script type="module" src="/js/player.js"></script>
+  </body>
+</html>

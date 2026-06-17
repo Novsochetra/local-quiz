@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Local Quiz — Cyberpunk Edition</title>
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/css/cyberpunk.css" />
+    <link rel="stylesheet" href="/css/animations.css" />
+    <link rel="stylesheet" href="/css/components.css" />
+  </head>
+  <body>
+    <div id="app">
+      <section id="landing-screen" class="screen active">
+        <div class="container" style="padding-top: 4rem; text-align: center">
+          <header class="header">
+            <h1 class="cyber-title" data-text="LOCAL QUIZ">LOCAL QUIZ</h1>
+            <p class="cyber-subtitle">
+              <span id="subtitle-text"></span><span class="cursor"></span>
+            </p>
+          </header>
+
+          <div class="cyber-card" style="max-width: 420px; margin: 0 auto">
+            <div class="form-group">
+              <a href="/play" class="cyber-btn large" style="width: 100%">JOIN GAME</a>
+            </div>
+            <div class="form-group" style="margin-bottom: 0">
+              <a href="/host" class="cyber-btn large magenta" style="width: 100%">HOST GAME</a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script src="/js/main.js" type="module"></script>
+  </body>
+</html>

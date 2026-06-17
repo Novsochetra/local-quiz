@@ -1,0 +1,43 @@
+{
+  "name": "local-quiz",
+  "version": "1.0.0",
+  "description": "Real-time cyberpunk quiz application",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "seed": "node db/seed.js",
+    "prepare": "husky",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "node tests/e2e-game.js"
+  },
+  "keywords": [
+    "quiz",
+    "realtime",
+    "socket.io",
+    "cyberpunk"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "bcrypt": "6.0.0",
+    "better-sqlite3": "12.11.1",
+    "dotenv": "17.4.2",
+    "express": "5.2.1",
+    "jsonwebtoken": "9.0.3",
+    "multer": "2.2.0",
+    "socket.io": "4.8.3",
+    "uuid": "14.0.0"
+  },
+  "devDependencies": {
+    "husky": "9.1.7",
+    "lint-staged": "15.5.1",
+    "prettier": "3.8.4",
+    "socket.io-client": "4.8.3"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

@@ -1,0 +1,12 @@
+node_modules/
+.env
+.env.local
+*.sqlite
+*.sqlite3
+db/quiz.db
+uploads/*
+!uploads/.gitkeep
+.DS_Store
+.vscode/
+*.log
+db/quiz.db-*

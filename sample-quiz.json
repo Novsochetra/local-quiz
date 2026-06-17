@@ -1,0 +1,40 @@
+{
+  "title": "Cyberpunk Trivia",
+  "description": "A neon-soaked quiz about cyberpunk culture.",
+  "questions": [
+    {
+      "type": "multiple_choice",
+      "text": "Which color is most associated with cyberpunk neon?",
+      "timeLimit": 20,
+      "points": 1000,
+      "options": [
+        { "text": "Cyan", "isCorrect": true },
+        { "text": "Beige", "isCorrect": false },
+        { "text": "Olive", "isCorrect": false },
+        { "text": "Taupe", "isCorrect": false }
+      ]
+    },
+    {
+      "type": "true_false",
+      "text": "The Matrix was released in 1999.",
+      "timeLimit": 15,
+      "points": 1000,
+      "options": [
+        { "text": "True", "isCorrect": true },
+        { "text": "False", "isCorrect": false }
+      ]
+    },
+    {
+      "type": "multiple_select",
+      "text": "Which of these are considered cyberpunk authors?",
+      "timeLimit": 25,
+      "points": 1000,
+      "options": [
+        { "text": "William Gibson", "isCorrect": true },
+        { "text": "Isaac Asimov", "isCorrect": false },
+        { "text": "Philip K. Dick", "isCorrect": true },
+        { "text": "Neal Stephenson", "isCorrect": true }
+      ]
+    }
+  ]
+}

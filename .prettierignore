@@ -1,0 +1,9 @@
+node_modules/
+package-lock.json
+*.sqlite
+*.sqlite3
+db/quiz.db
+uploads/*
+!uploads/.gitkeep
+.env
+.env.*

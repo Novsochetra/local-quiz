@@ -1,0 +1,144 @@
+:root {
+  --bg: #0a0a0a;
+  --bg-card: #0d0d0d;
+  --bg-input: #0d0d0d;
+  --bg-hover: rgba(0, 243, 255, 0.06);
+  --border: #1a2a3a;
+  --text: #00f3ff;
+  --text-dim: #0088aa;
+  --accent: #00f3ff;
+  --accent-hover: #00ffff;
+  --accent-soft: rgba(0, 243, 255, 0.08);
+  --cyan: #00f3ff;
+  --cyan-soft: rgba(0, 243, 255, 0.1);
+  --magenta: #ff00ff;
+  --magenta-soft: rgba(255, 0, 255, 0.1);
+  --purple: #9d00ff;
+  --purple-soft: rgba(157, 0, 255, 0.1);
+  --yellow: #ffe600;
+  --yellow-soft: rgba(255, 230, 0, 0.1);
+  --green: #00ff9d;
+  --green-soft: rgba(0, 255, 157, 0.1);
+  --red: #ff2a6d;
+  --red-soft: rgba(255, 42, 109, 0.1);
+  --radius: 2px;
+  --radius-sm: 2px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  font-family: 'Courier New', Courier, monospace;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.6;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* CRT scanline overlay */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.15) 2px,
+    rgba(0, 0, 0, 0.15) 4px
+  );
+  pointer-events: none;
+  z-index: 200;
+}
+
+/* Vignette */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 60%, rgba(0, 0, 0, 0.7) 100%);
+  pointer-events: none;
+  z-index: 199;
+}
+
+#app {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.container {
+  width: 100%;
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+.container-wide {
+  max-width: 900px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: 700;
+  margin: 0 0 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+p {
+  margin: 0 0 1rem;
+  line-height: 1.6;
+}
+
+a {
+  color: var(--cyan);
+  text-decoration: none;
+}
+
+a:hover {
+  text-shadow: 0 0 10px var(--cyan);
+}
+
+.screen {
+  display: none;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100vh;
+}
+
+.screen.active,
+.screen:not(.hidden) {
+  display: flex;
+}
+
+::selection {
+  background: var(--cyan-soft);
+  color: var(--cyan);
+}
+
+.header {
+  text-align: center;
+  padding: 24px 0 28px;
+}
