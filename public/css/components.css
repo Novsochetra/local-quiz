@@ -596,6 +596,118 @@
   border-top: 1px solid var(--border);
 }
 
+.modal-dialog-wide {
+  max-width: 800px;
+}
+
+.results-session-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 16px;
+  margin-bottom: 10px;
+  background: rgba(0, 243, 255, 0.03);
+  border: 1px solid var(--border);
+  transition: all 0.2s;
+}
+
+.results-session-row:hover {
+  border-color: var(--cyan);
+  box-shadow: 0 0 15px rgba(0, 243, 255, 0.05);
+}
+
+.results-session-date {
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.results-session-meta {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.results-question-block {
+  margin-bottom: 1rem;
+}
+
+.results-question-header {
+  margin-bottom: 1rem;
+}
+
+.results-question-text {
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 0.25rem;
+  line-height: 1.5;
+}
+
+.results-question-meta {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.results-correct-answer {
+  margin-bottom: 1rem;
+  padding: 10px 12px;
+  background: var(--green-soft);
+  border: 1px solid rgba(0, 255, 157, 0.3);
+  color: var(--green);
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.85rem;
+}
+
+.results-player-answers {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.results-player-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 12px;
+  background: rgba(0, 243, 255, 0.03);
+  border: 1px solid var(--border);
+  font-size: 0.85rem;
+}
+
+.results-player-name {
+  font-weight: 700;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.results-player-answer {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.8rem;
+  text-align: right;
+}
+
+.results-player-answer.correct {
+  color: var(--green);
+}
+
+.results-player-answer.wrong {
+  color: var(--red);
+}
+
+.results-player-score {
+  font-family: 'Courier New', Courier, monospace;
+  color: var(--cyan);
+  font-weight: 700;
+  text-align: right;
+  min-width: 60px;
+}
+
 .quiz-actions {
   display: flex;
   flex-wrap: wrap;

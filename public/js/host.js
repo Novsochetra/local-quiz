@@ -1,4 +1,4 @@
-import { $, api, showScreen } from './utils.js';
+import { $, api, showScreen, escapeHtml } from './utils.js';
 import { getSocket } from './socket.js';
 import { initAudio, playSound } from './audio.js';
 import { celebrate } from './confetti.js';
@@ -96,6 +96,7 @@ function renderQuizList(quizzes) {
                 <line x1="14" y1="11" x2="14" y2="17"></line>
               </svg>
             </button>
+            <button class="cyber-btn results-btn" data-id="${q.id}">Results</button>
             <button class="cyber-btn settings-btn" data-id="${q.id}">Settings</button>
             <button class="cyber-btn start-session-btn" data-id="${q.id}">Host</button>
           </div>
@@ -111,6 +112,10 @@ function renderQuizList(quizzes) {
 
   list.querySelectorAll('.settings-btn').forEach((btn) => {
     btn.addEventListener('click', () => openQuizSettings(btn.dataset.id));
+  });
+
+  list.querySelectorAll('.results-btn').forEach((btn) => {
+    btn.addEventListener('click', () => openQuizResults(btn.dataset.id));
   });
 
   list.querySelectorAll('.delete-quiz-btn').forEach((btn) => {
@@ -320,6 +325,195 @@ async function saveQuizSettings() {
   } catch (err) {
     showError('#quiz-settings-error', err.message);
   }
+}
+
+// Quiz results history
+let currentResultsQuizId = null;
+
+function closeQuizResults() {
+  $('#quiz-results-modal').classList.remove('active');
+  currentResultsQuizId = null;
+  $('#results-list-view').classList.remove('hidden');
+  $('#results-detail-view').classList.add('hidden');
+  $('#results-back-btn').classList.add('hidden');
+}
+
+function showResultsList() {
+  $('#results-list-view').classList.remove('hidden');
+  $('#results-detail-view').classList.add('hidden');
+  $('#results-back-btn').classList.add('hidden');
+}
+
+async function openQuizResults(quizId) {
+  currentResultsQuizId = quizId;
+  try {
+    const [quiz, sessions] = await Promise.all([
+      api(`/api/quizzes/${quizId}`),
+      api(`/api/quizzes/${quizId}/sessions`),
+    ]);
+    $('#results-modal-title').textContent = quiz.title;
+    renderSessionList(sessions);
+    $('#quiz-results-modal').classList.add('active');
+  } catch (err) {
+    alert(`Failed to load results: ${err.message}`);
+  }
+}
+
+function renderSessionList(sessions) {
+  const container = $('#results-list');
+  if (sessions.length === 0) {
+    container.innerHTML = `
+      <p style="color: var(--text-dim); text-align: center; padding: 24px 0;">
+        No completed games for this quiz yet.
+      </p>
+    `;
+    return;
+  }
+
+  container.innerHTML = sessions
+    .map(
+      (session) => `
+      <div class="results-session-row" data-id="${session.id}">
+        <div class="results-session-info">
+          <div class="results-session-date">${formatSessionDate(session.ended_at)}</div>
+          <div class="results-session-meta">PIN: ${session.pin} · ${session.player_count} players</div>
+        </div>
+        <button class="cyber-btn results-view-btn" data-id="${session.id}">View</button>
+      </div>
+    `
+    )
+    .join('');
+
+  container.querySelectorAll('.results-view-btn').forEach((btn) => {
+    btn.addEventListener('click', () => openSessionDetail(btn.dataset.id));
+  });
+}
+
+function formatSessionDate(isoString) {
+  if (!isoString) return 'Unknown date';
+  const date = new Date(isoString);
+  return date.toLocaleString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+async function openSessionDetail(sessionId) {
+  try {
+    const [session, breakdown] = await Promise.all([
+      api(`/api/sessions/${sessionId}`),
+      api(`/api/sessions/${sessionId}/answers`),
+    ]);
+
+    renderSessionDetail(session, breakdown);
+    $('#results-list-view').classList.add('hidden');
+    $('#results-detail-view').classList.remove('hidden');
+    $('#results-back-btn').classList.remove('hidden');
+  } catch (err) {
+    alert(`Failed to load session details: ${err.message}`);
+  }
+}
+
+function renderSessionDetail(session, breakdown) {
+  const leaderboardEl = $('#detail-leaderboard');
+  const podium = buildPodium(session.finalResults);
+
+  leaderboardEl.innerHTML = `
+    <div class="cyber-card" style="margin-bottom: 1.5rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+        <div>
+          <div style="color: var(--text-dim); font-size: 0.8rem;">PIN</div>
+          <div style="color: var(--yellow); font-weight: 700;">${session.pin}</div>
+        </div>
+        <div style="text-align: right;">
+          <div style="color: var(--text-dim); font-size: 0.8rem;">ENDED</div>
+          <div style="font-weight: 700;">${formatSessionDate(session.ended_at)}</div>
+        </div>
+      </div>
+      <div class="podium">${podium}</div>
+      <div class="leaderboard-list">${renderLeaderboardRows(session.finalResults)}</div>
+    </div>
+  `;
+
+  const breakdownEl = $('#detail-question-breakdown');
+  breakdownEl.innerHTML = `
+    <h3 style="margin: 2rem 0 1rem; color: var(--text-dim); font-size: 0.9rem;">QUESTION BREAKDOWN</h3>
+    ${breakdown.map((q) => renderQuestionBreakdown(q)).join('')}
+  `;
+}
+
+function buildPodium(leaderboard) {
+  const ordered = [leaderboard[1], leaderboard[0], leaderboard[2]].filter(Boolean);
+  const places = ['second', 'first', 'third'];
+
+  return ordered
+    .map(
+      (p, i) => `
+      <div class="podium-item ${places[i]} animate-pop">
+        <div style="font-size: 2rem; margin-bottom: 0.5rem;">${i === 1 ? '👑' : '#' + p.rank}</div>
+        <div style="word-break: break-word;">${escapeHtml(p.nickname)}</div>
+        <div style="margin-top: 0.5rem; font-size: 1.1rem;">${p.score.toLocaleString()}</div>
+      </div>
+    `
+    )
+    .join('');
+}
+
+function renderLeaderboardRows(leaderboard) {
+  return leaderboard
+    .slice(0, 10)
+    .map(
+      (p) => `
+      <div class="leaderboard-item">
+        <div class="leaderboard-rank">${p.rank}</div>
+        <div class="leaderboard-name">${escapeHtml(p.nickname)}</div>
+        <div class="leaderboard-score">${p.score.toLocaleString()}</div>
+      </div>
+    `
+    )
+    .join('');
+}
+
+function renderQuestionBreakdown(question) {
+  const correctText = question.correctOptions.map((o) => escapeHtml(o.text)).join(', ');
+
+  return `
+    <div class="cyber-card results-question-block">
+      <div class="results-question-header">
+        <div class="results-question-text">${escapeHtml(question.text)}</div>
+        <div class="results-question-meta">${question.type.replace(/_/g, ' ')} · ${question.points} pts</div>
+      </div>
+      <div class="results-correct-answer">
+        <span style="color: var(--green);">Correct:</span> ${correctText}
+      </div>
+      <div class="results-player-answers">
+        ${question.playerAnswers
+          .map(
+            (a) => `
+          <div class="results-player-row">
+            <span class="results-player-name">${escapeHtml(a.nickname)}</span>
+            <span class="results-player-answer ${a.isCorrect ? 'correct' : 'wrong'}">
+              ${a.isCorrect ? '✓' : '✗'} ${formatSelectedOptions(a.selectedOptions)}
+            </span>
+            <span class="results-player-score">${a.scoreEarned.toLocaleString()}</span>
+          </div>
+        `
+          )
+          .join('')}
+      </div>
+    </div>
+  `;
+}
+
+function formatSelectedOptions(selectedOptions) {
+  if (!selectedOptions || selectedOptions.length === 0) return 'No answer';
+  if (typeof selectedOptions[0] === 'object') {
+    return selectedOptions.map((o) => escapeHtml(o.text)).join(', ');
+  }
+  return selectedOptions.join(', ');
 }
 
 function renderLobby(players) {
@@ -600,6 +794,15 @@ $('#quiz-settings-save').addEventListener('click', saveQuizSettings);
 $('#quiz-settings-modal').addEventListener('click', (e) => {
   if (e.target.id === 'quiz-settings-modal') {
     closeQuizSettings();
+  }
+});
+
+$('#results-modal-close').addEventListener('click', closeQuizResults);
+$('#results-close-btn').addEventListener('click', closeQuizResults);
+$('#results-back-btn').addEventListener('click', showResultsList);
+$('#quiz-results-modal').addEventListener('click', (e) => {
+  if (e.target.id === 'quiz-results-modal') {
+    closeQuizResults();
   }
 });
 

@@ -9,6 +9,7 @@ import { setupSocketIO } from './socket/index.js';
 import authRoutes from './routes/auth.js';
 import quizRoutes from './routes/quizzes.js';
 import uploadRoutes from './routes/upload.js';
+import sessionRoutes from './routes/sessions.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -27,6 +28,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/auth', authRoutes);
 app.use('/api/quizzes', quizRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api', sessionRoutes);
 
 app.get('/host', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'host.html'));

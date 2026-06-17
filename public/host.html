@@ -260,6 +260,28 @@
       </div>
     </div>
 
+    <div id="quiz-results-modal" class="modal-overlay">
+      <div class="modal-dialog modal-dialog-wide">
+        <div class="modal-header">
+          <h3>Past Results — <span id="results-modal-title"></span></h3>
+          <button id="results-modal-close" class="modal-close" aria-label="Close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div id="results-list-view">
+            <div id="results-list"></div>
+          </div>
+          <div id="results-detail-view" class="hidden">
+            <div id="detail-leaderboard"></div>
+            <div id="detail-question-breakdown"></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="results-back-btn" class="cyber-btn hidden">BACK TO SESSIONS</button>
+          <button id="results-close-btn" class="cyber-btn">CLOSE</button>
+        </div>
+      </div>
+    </div>
+
     <script src="/socket.io/socket.io.js"></script>
     <script type="module" src="/js/host.js"></script>
   </body>

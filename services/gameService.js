@@ -104,3 +104,72 @@ export function saveAnswer(playerId, questionId, selectedOptions, isCorrect, sco
 export function getAnswersForQuestion(questionId) {
   return db.prepare('SELECT * FROM answers WHERE question_id = ?').all(questionId);
 }
+
+export function getSessionsByQuizId(quizId) {
+  return db
+    .prepare(
+      `SELECT id, pin, status, created_at, started_at, ended_at, final_results_json,
+        (SELECT COUNT(*) FROM players WHERE session_id = game_sessions.id) AS player_count
+       FROM game_sessions
+       WHERE quiz_id = ? AND status = 'finished'
+       ORDER BY ended_at DESC`
+    )
+    .all(quizId)
+    .map((session) => ({
+      ...session,
+      finalResults: JSON.parse(session.final_results_json || '[]'),
+    }));
+}
+
+export function getSessionDetail(id) {
+  const session = db.prepare('SELECT * FROM game_sessions WHERE id = ?').get(id);
+  if (!session) return null;
+  return {
+    ...session,
+    finalResults: JSON.parse(session.final_results_json || '[]'),
+    players: getPlayers(id),
+  };
+}
+
+export function getSessionAnswerBreakdown(sessionId) {
+  const session = db.prepare('SELECT quiz_id FROM game_sessions WHERE id = ?').get(sessionId);
+  if (!session) return null;
+
+  const players = getPlayers(sessionId);
+  const questions = db
+    .prepare('SELECT * FROM questions WHERE quiz_id = ? ORDER BY order_index ASC')
+    .all(session.quiz_id);
+
+  return questions.map((question) => {
+    const correctOptions = db
+      .prepare(
+        'SELECT * FROM options WHERE question_id = ? AND is_correct = 1 ORDER BY order_index ASC'
+      )
+      .all(question.id);
+
+    const playerAnswers = players.map((player) => {
+      const answer = db
+        .prepare('SELECT * FROM answers WHERE player_id = ? AND question_id = ?')
+        .get(player.id, question.id);
+
+      return {
+        playerId: player.id,
+        nickname: player.nickname,
+        selectedOptions: answer ? JSON.parse(answer.selected_options_json) : [],
+        isCorrect: answer ? Boolean(answer.is_correct) : false,
+        scoreEarned: answer ? answer.score_earned : 0,
+        answeredAt: answer ? answer.answered_at : null,
+      };
+    });
+
+    return {
+      questionId: question.id,
+      text: question.text,
+      type: question.type,
+      points: question.points,
+      timeLimitSec: question.time_limit_sec,
+      correctOptions: correctOptions.map((o) => ({ id: o.id, text: o.text })),
+      playerAnswers,
+    };
+  });
+}
