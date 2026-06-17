@@ -26,5 +26,8 @@ if (!quizColumns.find((c) => c.name === 'auto_advance_delay')) {
 if (!quizColumns.find((c) => c.name === 'player_layout')) {
   db.prepare("ALTER TABLE quizzes ADD COLUMN player_layout TEXT DEFAULT 'default'").run();
 }
+if (!quizColumns.find((c) => c.name === 'countdown_seconds')) {
+  db.prepare('ALTER TABLE quizzes ADD COLUMN countdown_seconds INTEGER NOT NULL DEFAULT 5').run();
+}
 
 export default db;

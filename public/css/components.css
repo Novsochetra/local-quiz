@@ -560,12 +560,78 @@
 
 .quiz-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
 }
 
-.settings-btn {
-  padding: 8px 16px;
-  font-size: 0.75rem;
+.quiz-actions .cyber-btn {
+  height: 44px;
+}
+
+.splash-countdown {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 8rem;
+  font-weight: 700;
+  color: var(--cyan);
+  text-shadow:
+    0 0 30px var(--cyan),
+    0 0 60px rgba(0, 243, 255, 0.4);
+  text-align: center;
+  line-height: 1;
+  animation: splash-pulse 1s ease-in-out infinite;
+}
+
+.splash-countdown.splash-go {
+  color: var(--green);
+  text-shadow:
+    0 0 30px var(--green),
+    0 0 60px rgba(0, 255, 157, 0.4);
+  animation: splash-pop 0.4s ease-out;
+}
+
+@keyframes splash-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.85;
+  }
+}
+
+@keyframes splash-pop {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .splash-countdown {
+    font-size: 5rem;
+  }
+}
+
+.delete-quiz-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  padding: 0;
+}
+
+.delete-quiz-btn .delete-icon {
+  width: 20px;
+  height: 20px;
 }
 
 .settings-question {

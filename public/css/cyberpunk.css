@@ -152,6 +152,22 @@
   text-shadow: 0 0 10px var(--yellow);
 }
 
+.cyber-btn.danger {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.cyber-btn.danger:hover:not(:disabled) {
+  background: var(--red-soft);
+  box-shadow: 0 0 20px rgba(255, 42, 109, 0.2);
+  text-shadow: 0 0 10px var(--red);
+}
+
+.delete-quiz-btn::before,
+.delete-quiz-btn::after {
+  content: none;
+}
+
 .pin-display {
   font-family: 'Courier New', Courier, monospace;
   font-size: 3rem;

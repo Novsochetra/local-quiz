@@ -55,6 +55,18 @@ async function getQuiz(token, id) {
   return res.json();
 }
 
+async function updateQuizSettings(token, id, settings) {
+  const res = await fetch(`${BASE_URL}/api/quizzes/${id}`, {
+    method: 'PUT',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(settings),
+  });
+  if (!res.ok) throw new Error('Failed to update quiz settings');
+}
+
 function createSocket() {
   return io(BASE_URL, { transports: ['websocket'] });
 }
@@ -83,6 +95,19 @@ async function runTest() {
     const quiz = await getQuiz(token, quizSummary.id);
     console.log('Using quiz:', quiz.title);
 
+    await updateQuizSettings(token, quiz.id, {
+      title: quiz.title,
+      description: quiz.description,
+      autoAdvance: { enabled: false, delay: 5 },
+      countdownSeconds: 1,
+      playerLayout: quiz.player_layout || 'default',
+      questions: quiz.questions.map((q) => ({
+        id: q.id,
+        timeLimitSec: q.time_limit_sec,
+        points: q.points,
+      })),
+    });
+
     const host = createSocket();
     host.emit('host:create-session', { quizId: quiz.id });
     const session = await waitFor(host, 'host:session-created');
@@ -106,7 +131,8 @@ async function runTest() {
     console.log('Game started');
 
     for (let qIndex = 0; qIndex < quiz.questions.length; qIndex++) {
-      const question = await waitFor(players[0].socket, 'server:question');
+      await waitFor(players[0].socket, 'server:question-countdown', 5000);
+      const question = await waitFor(players[0].socket, 'server:question', 5000);
       console.log(`Question ${qIndex + 1}:`, question.text);
 
       for (const player of players) {
@@ -117,7 +143,7 @@ async function runTest() {
         });
       }
 
-      await waitFor(players[0].socket, 'server:leaderboard');
+      await waitFor(players[0].socket, 'server:leaderboard', 5000);
       console.log(`Leaderboard received for question ${qIndex + 1}`);
 
       host.emit('host:next-question');

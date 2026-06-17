@@ -2,7 +2,6 @@ import { checkAnswer, calculateScore } from './Scoring.js';
 import { saveAnswer, updatePlayerScore } from '../../services/gameService.js';
 
 const ANSWER_REVEAL_DELAY_MS = 2000;
-const LEADERBOARD_DELAY_MS = 4000;
 
 export class QuestionEngine {
   constructor(session, io) {
@@ -13,7 +12,7 @@ export class QuestionEngine {
     this.timer = null;
     this.answeredPlayers = new Set();
     this.optionSelectionCounts = new Map();
-    this.phase = 'idle'; // idle | question | reveal | leaderboard
+    this.phase = 'idle'; // idle | countdown | question | reveal | leaderboard
   }
 
   start() {
@@ -30,6 +29,23 @@ export class QuestionEngine {
     this.currentQuestionIndex++;
     this.answeredPlayers.clear();
     this.optionSelectionCounts.clear();
+    this.phase = 'countdown';
+
+    const countdownSeconds = Math.min(15, Math.max(1, this.session.quiz.countdown_seconds ?? 5));
+
+    this.io.to(this.session.pin).emit('server:question-countdown', {
+      seconds: countdownSeconds,
+      currentQuestionIndex: this.currentQuestionIndex,
+      totalQuestions: this.session.quiz.questions.length,
+    });
+
+    this.timer = setTimeout(() => {
+      this.emitQuestion();
+    }, countdownSeconds * 1000);
+  }
+
+  emitQuestion() {
+    if (this.phase !== 'countdown') return;
     this.phase = 'question';
 
     const question = this.session.quiz.questions[this.currentQuestionIndex];
@@ -125,24 +141,8 @@ export class QuestionEngine {
     const question = this.session.quiz.questions[this.currentQuestionIndex];
     const correctIds = question.options.filter((opt) => opt.is_correct === 1).map((opt) => opt.id);
 
-    const totalAnswered = this.answeredPlayers.size || 1;
-    const breakdown = question.options.map((opt) => {
-      const count = this.optionSelectionCounts.get(opt.id) || 0;
-      return {
-        id: opt.id,
-        text: opt.text,
-        count,
-        percentage: Math.round((count / totalAnswered) * 100),
-      };
-    });
-
     this.io.to(this.session.pin).emit('server:answer-reveal', {
       correctOptionIds: correctIds,
-    });
-
-    this.io.to(this.session.pin).emit('server:answer-breakdown', {
-      breakdown,
-      totalAnswered,
     });
 
     this.timer = setTimeout(() => {

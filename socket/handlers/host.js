@@ -71,6 +71,8 @@ export function registerHostHandlers(socket, io) {
         return socket.emit('server:error', { message: 'Not authorized' });
       }
 
+      if (session.engine.phase !== 'idle') return;
+
       io.to(pin).emit('server:game-started');
       session.startGame();
     } catch (err) {
@@ -85,6 +87,8 @@ export function registerHostHandlers(socket, io) {
       if (!session || !socket.data.isHost) {
         return socket.emit('server:error', { message: 'Not authorized' });
       }
+
+      if (session.engine.phase !== 'leaderboard') return;
 
       session.nextQuestion();
     } catch (err) {

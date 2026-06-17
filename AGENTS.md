@@ -91,10 +91,11 @@ const socket = window.io();
 2. Server generates a 6-digit PIN.
 3. Players join with PIN + nickname.
 4. Host starts the game from the lobby.
-5. Server emits questions; players answer within the time limit.
-6. Server reveals correct answers and emits leaderboards.
-7. Host advances to the next question.
-8. After the final question, the server emits final results and saves them.
+5. Server shows a configurable splash countdown before each question.
+6. Server emits the question; players answer within the time limit.
+7. Server reveals correct answers and emits leaderboards as a separate screen.
+8. Host advances to the next question (splash countdown repeats).
+9. After the final question, the server emits final results and saves them.
 
 ### Adding a new feature
 

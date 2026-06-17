@@ -87,6 +87,14 @@ function renderQuizList(quizzes) {
             <p style="margin: 0.5rem 0 0; color: var(--text-dim); font-size: 0.9rem;">${q.description || 'No description'}</p>
           </div>
           <div class="quiz-actions">
+            <button class="cyber-btn danger delete-quiz-btn" data-id="${q.id}" aria-label="Delete quiz" title="Delete quiz">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="delete-icon">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                <line x1="10" y1="11" x2="10" y2="17"></line>
+                <line x1="14" y1="11" x2="14" y2="17"></line>
+              </svg>
+            </button>
             <button class="cyber-btn settings-btn" data-id="${q.id}">Settings</button>
             <button class="cyber-btn start-session-btn" data-id="${q.id}">Host</button>
           </div>
@@ -103,6 +111,26 @@ function renderQuizList(quizzes) {
   list.querySelectorAll('.settings-btn').forEach((btn) => {
     btn.addEventListener('click', () => openQuizSettings(btn.dataset.id));
   });
+
+  list.querySelectorAll('.delete-quiz-btn').forEach((btn) => {
+    btn.addEventListener('click', () => deleteQuiz(btn.dataset.id, btn));
+  });
+}
+
+async function deleteQuiz(quizId, button) {
+  if (!confirm('Are you sure you want to delete this quiz? This cannot be undone.')) {
+    return;
+  }
+
+  button.disabled = true;
+  try {
+    await api(`/api/quizzes/${quizId}`, { method: 'DELETE' });
+    await loadDashboard();
+  } catch (err) {
+    alert(`Failed to delete quiz: ${err.message}`);
+  } finally {
+    button.disabled = false;
+  }
 }
 
 async function importQuiz() {
@@ -162,6 +190,7 @@ function renderQuizSettings(quiz) {
   $('#settings-quiz-description').value = quiz.description || '';
   $('#settings-auto-advance-toggle').checked = !!quiz.auto_advance_enabled;
   $('#settings-auto-advance-seconds').value = quiz.auto_advance_delay ?? 5;
+  $('#settings-countdown-seconds').value = quiz.countdown_seconds ?? 5;
   $('#settings-player-layout').value = ['default', 'options_only'].includes(quiz.player_layout)
     ? quiz.player_layout
     : 'default';
@@ -219,10 +248,16 @@ async function saveQuizSettings() {
     enabled: isSettingsAutoAdvanceEnabled(),
     delay: getSettingsAutoAdvanceDelay(),
   };
+  const countdownSeconds = getSettingsCountdownSeconds();
   const playerLayout = $('#settings-player-layout').value;
 
   if (!title) {
     showError('#quiz-settings-error', 'Quiz title is required');
+    return;
+  }
+
+  if (Number.isNaN(countdownSeconds) || countdownSeconds < 1 || countdownSeconds > 15) {
+    showError('#quiz-settings-error', 'Countdown must be between 1 and 15 seconds');
     return;
   }
 
@@ -257,7 +292,14 @@ async function saveQuizSettings() {
   try {
     await api(`/api/quizzes/${currentSettingsQuiz.id}`, {
       method: 'PUT',
-      body: JSON.stringify({ title, description, autoAdvance, playerLayout, questions }),
+      body: JSON.stringify({
+        title,
+        description,
+        autoAdvance,
+        countdownSeconds,
+        playerLayout,
+        questions,
+      }),
     });
 
     $('#quiz-settings-success').textContent = 'Quiz settings saved successfully!';
@@ -304,6 +346,12 @@ function getSettingsAutoAdvanceDelay() {
   const input = $('#settings-auto-advance-seconds');
   const value = parseInt(input.value, 10);
   return Math.min(15, Math.max(3, Number.isNaN(value) ? 5 : value));
+}
+
+function getSettingsCountdownSeconds() {
+  const input = $('#settings-countdown-seconds');
+  const value = parseInt(input.value, 10);
+  return Math.min(15, Math.max(1, Number.isNaN(value) ? 5 : value));
 }
 
 function isSettingsAutoAdvanceEnabled() {
@@ -431,7 +479,6 @@ function renderHostQuestion(question) {
     `Question ${question.index + 1} / ${question.totalQuestions}`;
   $('#host-question-text').textContent = question.text;
   $('#host-answer-count').textContent = '0 / 0 answered';
-  $('#host-answer-breakdown').classList.add('hidden');
   $('#host-player-status').innerHTML = '';
 
   const container = $('#host-options');
@@ -446,31 +493,38 @@ function renderHostQuestion(question) {
   startHostTimer(question.timeLimit);
 }
 
-function renderAnswerBreakdown({ breakdown, totalAnswered }) {
-  const container = $('#host-answer-breakdown');
-  container.classList.remove('hidden');
+let hostSplashCountdownInterval = null;
 
-  if (!breakdown || breakdown.length === 0) {
-    container.innerHTML = '';
-    return;
-  }
+function resetHostSplashCountdown() {
+  clearInterval(hostSplashCountdownInterval);
+  hostSplashCountdownInterval = null;
+}
 
-  container.innerHTML = `
-    <h3 style="margin: 0 0 1rem; color: var(--text-dim); font-size: 0.85rem">ANSWER BREAKDOWN (${totalAnswered} answered)</h3>
-    ${breakdown
-      .map(
-        (b) => `
-        <div class="answer-breakdown-row">
-          <div class="answer-breakdown-label">${b.text}</div>
-          <div class="answer-breakdown-bar-track">
-            <div class="answer-breakdown-bar-fill" style="width: ${b.percentage}%"></div>
-          </div>
-          <div class="answer-breakdown-value">${b.percentage}%</div>
-        </div>
-      `
-      )
-      .join('')}
-  `;
+function renderHostSplash({ seconds, currentQuestionIndex, totalQuestions }) {
+  resetHostSplashCountdown();
+  showScreen(screens.game, 'host-splash-view');
+
+  $('#host-splash-question-progress').textContent =
+    typeof currentQuestionIndex === 'number' && typeof totalQuestions === 'number'
+      ? `QUESTION ${currentQuestionIndex + 1} / ${totalQuestions}`
+      : '';
+
+  const display = $('#host-splash-countdown');
+  let remaining = Math.max(1, seconds);
+  display.textContent = remaining;
+  display.classList.remove('splash-go');
+
+  hostSplashCountdownInterval = setInterval(() => {
+    remaining--;
+    if (remaining <= 0) {
+      clearInterval(hostSplashCountdownInterval);
+      hostSplashCountdownInterval = null;
+      display.textContent = 'GO!';
+      display.classList.add('splash-go');
+    } else {
+      display.textContent = remaining;
+    }
+  }, 1000);
 }
 
 function renderLeaderboard(leaderboard) {
@@ -572,7 +626,12 @@ socket.on('server:game-started', () => {
   switchTo('game');
 });
 
+socket.on('server:question-countdown', (data) => {
+  renderHostSplash(data);
+});
+
 socket.on('server:question', (question) => {
+  resetHostSplashCountdown();
   renderHostQuestion(question);
 });
 
@@ -595,10 +654,6 @@ socket.on('server:answer-reveal', ({ correctOptionIds }) => {
         btn.style.opacity = '1';
       }
     });
-});
-
-socket.on('server:answer-breakdown', (data) => {
-  renderAnswerBreakdown(data);
 });
 
 socket.on('server:leaderboard', ({ leaderboard }) => {

@@ -1,0 +1,122 @@
+{
+  "title": "HTML Mastery",
+  "description": "Test your knowledge of HyperText Markup Language.",
+  "questions": [
+    {
+      "type": "multiple_choice",
+      "text": "What does HTML stand for?",
+      "timeLimit": 15,
+      "points": 1000,
+      "options": [
+        { "text": "HyperText Markup Language", "isCorrect": true },
+        { "text": "HighText Machine Language", "isCorrect": false },
+        { "text": "HyperTool Multi Language", "isCorrect": false },
+        { "text": "Home Tool Markup Language", "isCorrect": false }
+      ]
+    },
+    {
+      "type": "multiple_choice",
+      "text": "Which element defines the main content area of an HTML document?",
+      "timeLimit": 15,
+      "points": 1000,
+      "options": [
+        { "text": "<header>", "isCorrect": false },
+        { "text": "<body>", "isCorrect": true },
+        { "text": "<section>", "isCorrect": false },
+        { "text": "<main>", "isCorrect": false }
+      ]
+    },
+    {
+      "type": "true_false",
+      "text": "The <head> element is visible to users in the browser window.",
+      "timeLimit": 10,
+      "points": 1000,
+      "options": [
+        { "text": "True", "isCorrect": false },
+        { "text": "False", "isCorrect": true }
+      ]
+    },
+    {
+      "type": "multiple_choice",
+      "text": "Which attribute is used to specify a unique identifier for an element?",
+      "timeLimit": 15,
+      "points": 1000,
+      "options": [
+        { "text": "class", "isCorrect": false },
+        { "text": "id", "isCorrect": true },
+        { "text": "name", "isCorrect": false },
+        { "text": "key", "isCorrect": false }
+      ]
+    },
+    {
+      "type": "multiple_select",
+      "text": "Which of the following are void (self-closing) elements in HTML?",
+      "timeLimit": 20,
+      "points": 1000,
+      "options": [
+        { "text": "<img>", "isCorrect": true },
+        { "text": "<div>", "isCorrect": false },
+        { "text": "<br>", "isCorrect": true },
+        { "text": "<span>", "isCorrect": false }
+      ]
+    },
+    {
+      "type": "multiple_choice",
+      "text": "What is the correct HTML for inserting an image?",
+      "timeLimit": 15,
+      "points": 1000,
+      "options": [
+        { "text": "<img src='photo.jpg' alt='photo'>", "isCorrect": true },
+        { "text": "<image src='photo.jpg'>", "isCorrect": false },
+        { "text": "<img href='photo.jpg' />", "isCorrect": false },
+        { "text": "<picture source='photo.jpg' />", "isCorrect": false }
+      ]
+    },
+    {
+      "type": "true_false",
+      "text": "HTML5 introduced the <canvas> element for drawing graphics.",
+      "timeLimit": 10,
+      "points": 1000,
+      "options": [
+        { "text": "True", "isCorrect": true },
+        { "text": "False", "isCorrect": false }
+      ]
+    },
+    {
+      "type": "multiple_choice",
+      "text": "Which doctype declaration is required for an HTML5 document?",
+      "timeLimit": 15,
+      "points": 1000,
+      "options": [
+        { "text": "<!DOCTYPE html5>", "isCorrect": false },
+        { "text": "<!DOCTYPE HTML5>", "isCorrect": false },
+        { "text": "<!DOCTYPE html>", "isCorrect": true },
+        { "text": "<!DOCTYPE>", "isCorrect": false }
+      ]
+    },
+    {
+      "type": "multiple_select",
+      "text": "Which of these are semantic HTML5 elements?",
+      "timeLimit": 20,
+      "points": 1000,
+      "options": [
+        { "text": "<article>", "isCorrect": true },
+        { "text": "<b>", "isCorrect": false },
+        { "text": "<footer>", "isCorrect": true },
+        { "text": "<nav>", "isCorrect": true }
+      ]
+    },
+    {
+      "type": "multiple_choice",
+      "text": "What is the purpose of the alt attribute on an <img> element?",
+      "timeLimit": 15,
+      "points": 1000,
+      "options": [
+        { "text": "Defines the image alignment", "isCorrect": false },
+        { "text": "Provides alternative text for accessibility", "isCorrect": true },
+        { "text": "Specifies the image dimensions", "isCorrect": false },
+        { "text": "Adds a tooltip on hover", "isCorrect": false }
+      ]
+    }
+  ]
+}

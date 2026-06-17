@@ -93,6 +93,7 @@ router.put('/:id', authenticateHost, (req, res, next) => {
       description,
       autoAdvanceEnabled: req.body.autoAdvance?.enabled,
       autoAdvanceDelay: req.body.autoAdvance?.delay,
+      countdownSeconds: req.body.countdownSeconds,
       playerLayout: req.body.playerLayout,
     });
 

@@ -100,6 +100,17 @@
 
       <section id="game-screen" class="screen">
         <div class="container container-wide" style="padding-top: 2rem">
+          <div id="host-splash-view" class="hidden">
+            <header class="header">
+              <h1 class="cyber-title" data-text="GET READY">GET READY</h1>
+              <p id="host-splash-question-progress" class="cyber-subtitle"></p>
+            </header>
+            <div id="host-splash-countdown" class="splash-countdown">5</div>
+            <p style="color: var(--text-dim); text-align: center; margin-top: 1rem">
+              Next question incoming...
+            </p>
+          </div>
+
           <div id="host-question-view" class="hidden">
             <div
               style="
@@ -136,8 +147,6 @@
               ></h2>
             </div>
             <div id="host-options" class="options-grid"></div>
-
-            <div id="host-answer-breakdown" class="host-answer-breakdown hidden"></div>
 
             <div class="cyber-card" style="margin-top: 1.5rem">
               <h3 style="margin: 0 0 1rem; color: var(--text-dim); font-size: 0.85rem">
@@ -195,6 +204,22 @@
           </div>
 
           <div class="cyber-card" style="margin-top: 1.5rem; margin-bottom: 1.5rem">
+            <h3>Question Countdown</h3>
+            <div class="form-group" style="margin-bottom: 0">
+              <label>Seconds before each question</label>
+              <input
+                type="number"
+                id="settings-countdown-seconds"
+                class="cyber-input"
+                value="5"
+                min="1"
+                max="15"
+                style="max-width: 120px"
+              />
+            </div>
+          </div>
+
+          <div class="cyber-card" style="margin-bottom: 1.5rem">
             <h3>Auto Advance</h3>
             <label class="toggle-row">
               <input type="checkbox" id="settings-auto-advance-toggle" />

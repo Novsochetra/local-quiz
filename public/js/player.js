@@ -8,6 +8,7 @@ const socket = getSocket();
 const screens = {
   join: $('#join-screen'),
   waiting: $('#waiting-screen'),
+  splash: $('#splash-screen'),
   question: $('#question-screen'),
   result: $('#result-screen'),
   gameOver: $('#game-over-screen'),
@@ -23,7 +24,7 @@ let answered = false;
 let timerInterval = null;
 let hasInteracted = false;
 let lastAnswerResult = null;
-let resultCountdownInterval = null;
+let splashCountdownInterval = null;
 
 function getCssVar(name) {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -265,26 +266,37 @@ function renderLeaderboard({ leaderboard, currentQuestionIndex, totalQuestions }
 }
 
 function resetResultTerminal() {
-  clearInterval(resultCountdownInterval);
-  resultCountdownInterval = null;
   $('#result-terminal-text').textContent = 'WAITING_FOR_HOST...';
 }
 
-function startResultCountdown(seconds) {
-  clearInterval(resultCountdownInterval);
-  const terminalText = $('#result-terminal-text');
+function resetSplashCountdown() {
+  clearInterval(splashCountdownInterval);
+  splashCountdownInterval = null;
+}
+
+function renderSplash({ seconds, currentQuestionIndex, totalQuestions }) {
+  resetSplashCountdown();
+  switchTo('splash');
+
+  $('#splash-question-progress').textContent =
+    typeof currentQuestionIndex === 'number' && typeof totalQuestions === 'number'
+      ? `QUESTION ${currentQuestionIndex + 1} / ${totalQuestions}`
+      : '';
+
+  const display = $('#splash-countdown');
   let remaining = Math.max(1, seconds);
+  display.textContent = remaining;
+  display.classList.remove('splash-go');
 
-  terminalText.textContent = `NEXT_ROUND_IN: ${remaining}s`;
-
-  resultCountdownInterval = setInterval(() => {
+  splashCountdownInterval = setInterval(() => {
     remaining--;
     if (remaining <= 0) {
-      clearInterval(resultCountdownInterval);
-      resultCountdownInterval = null;
-      terminalText.textContent = 'LOADING_NEXT_ROUND...';
+      clearInterval(splashCountdownInterval);
+      splashCountdownInterval = null;
+      display.textContent = 'GO!';
+      display.classList.add('splash-go');
     } else {
-      terminalText.textContent = `NEXT_ROUND_IN: ${remaining}s`;
+      display.textContent = remaining;
     }
   }, 1000);
 }
@@ -369,11 +381,17 @@ socket.on('player:kicked', () => {
 });
 
 socket.on('server:game-started', () => {
-  switchTo('question');
+  switchTo('splash');
+});
+
+socket.on('server:question-countdown', (data) => {
+  resetResultTerminal();
+  renderSplash(data);
 });
 
 socket.on('server:question', (question) => {
   resetResultTerminal();
+  resetSplashCountdown();
   renderQuestion(question);
 });
 
@@ -397,14 +415,6 @@ socket.on('server:answer-reveal', ({ correctOptionIds }) => {
 
 socket.on('server:leaderboard', (data) => {
   renderLeaderboard(data);
-});
-
-socket.on('server:auto-advance-started', ({ seconds }) => {
-  startResultCountdown(seconds);
-});
-
-socket.on('server:auto-advance-cancelled', () => {
-  resetResultTerminal();
 });
 
 socket.on('server:game-over', ({ podium, leaderboard }) => {

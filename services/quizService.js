@@ -32,22 +32,35 @@ export function getQuizByCode(code) {
 }
 
 export function deleteQuiz(id) {
-  const result = db.prepare('DELETE FROM quizzes WHERE id = ?').run(id);
-  return result.changes > 0;
+  const deleteAnswers = db.prepare(
+    'DELETE FROM answers WHERE question_id IN (SELECT id FROM questions WHERE quiz_id = ?)'
+  );
+  const deleteSessions = db.prepare('DELETE FROM game_sessions WHERE quiz_id = ?');
+  const deleteQuiz = db.prepare('DELETE FROM quizzes WHERE id = ?');
+
+  const transaction = db.transaction(() => {
+    deleteAnswers.run(id);
+    deleteSessions.run(id);
+    const result = deleteQuiz.run(id);
+    return result.changes > 0;
+  });
+
+  return transaction();
 }
 
 export function updateQuiz(
   id,
-  { title, description, autoAdvanceEnabled, autoAdvanceDelay, playerLayout }
+  { title, description, autoAdvanceEnabled, autoAdvanceDelay, countdownSeconds, playerLayout }
 ) {
   const enabled = autoAdvanceEnabled ? 1 : 0;
   const delay = Math.min(15, Math.max(3, autoAdvanceDelay ?? 5));
+  const countdown = Math.min(15, Math.max(1, countdownSeconds ?? 5));
   const layout = ['default', 'options_only'].includes(playerLayout) ? playerLayout : 'default';
   const result = db
     .prepare(
-      'UPDATE quizzes SET title = ?, description = ?, auto_advance_enabled = ?, auto_advance_delay = ?, player_layout = ? WHERE id = ?'
+      'UPDATE quizzes SET title = ?, description = ?, auto_advance_enabled = ?, auto_advance_delay = ?, countdown_seconds = ?, player_layout = ? WHERE id = ?'
     )
-    .run(title, description || null, enabled, delay, layout, id);
+    .run(title, description || null, enabled, delay, countdown, layout, id);
   return result.changes > 0;
 }
 
