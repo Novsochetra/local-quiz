@@ -29,7 +29,7 @@ local-quiz/
 │   ├── host.html
 │   ├── index.html
 │   └── play.html
-├── routes/           # Express route handlers
+├── routes/           # Express route handlers (auth, quizzes, sessions, upload)
 ├── services/         # Database service layer
 ├── socket/           # Socket.IO handlers and game logic
 │   ├── game/         # GameSession, QuestionEngine, Scoring
@@ -103,6 +103,7 @@ const socket = window.io();
 - **New Socket.IO event:** add a handler in `socket/handlers/host.js` or `player.js`.
 - **New question type:** update `db/schema.sql` validation in `services/quizService.js`, scoring in `socket/game/Scoring.js`, question rendering in `public/js/player.js`, and answer handling.
 - **New frontend screen:** add the screen to the relevant HTML file, toggle visibility via the JS module, and style it in `public/css/`.
+- **Results history:** API routes in `routes/sessions.js`, DB queries in `services/gameService.js`, frontend modal + rendering in `public/js/host.js`, styles in `public/css/components.css`.
 
 ## Environment
 
