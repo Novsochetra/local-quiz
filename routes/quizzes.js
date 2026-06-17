@@ -93,6 +93,7 @@ router.put('/:id', authenticateHost, (req, res, next) => {
       description,
       autoAdvanceEnabled: req.body.autoAdvance?.enabled,
       autoAdvanceDelay: req.body.autoAdvance?.delay,
+      playerLayout: req.body.playerLayout,
     });
 
     for (const q of questions) {

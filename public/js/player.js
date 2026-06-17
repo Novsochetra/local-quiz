@@ -134,14 +134,26 @@ function renderQuestion(question) {
 
   $('#question-counter').textContent = `${question.index + 1} / ${question.totalQuestions}`;
   $('#question-points').textContent = `${question.points} pts`;
-  $('#question-text').textContent = question.text;
 
-  const img = $('#question-image');
-  if (question.mediaUrl) {
-    img.src = question.mediaUrl;
-    img.classList.remove('hidden');
+  const isOptionsOnly = question.playerLayout === 'options_only';
+  const questionContent = $('#question-content');
+  const optionsOnlyHint = $('#options-only-hint');
+
+  if (isOptionsOnly) {
+    questionContent.classList.add('hidden');
+    optionsOnlyHint.classList.remove('hidden');
   } else {
-    img.classList.add('hidden');
+    questionContent.classList.remove('hidden');
+    optionsOnlyHint.classList.add('hidden');
+    $('#question-text').textContent = question.text;
+
+    const img = $('#question-image');
+    if (question.mediaUrl) {
+      img.src = question.mediaUrl;
+      img.classList.remove('hidden');
+    } else {
+      img.classList.add('hidden');
+    }
   }
 
   const container = $('#options-container');

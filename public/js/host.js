@@ -17,6 +17,8 @@ let currentQuestion = null;
 let autoAdvanceTimer = null;
 let autoAdvanceCountdownInterval = null;
 let currentQuizAutoAdvance = { enabled: false, delay: 5 };
+let hostTimerInterval = null;
+let currentHostPlayers = [];
 
 function switchTo(screenName) {
   Object.values(screens).forEach((s) => s.classList.add('hidden'));
@@ -160,6 +162,9 @@ function renderQuizSettings(quiz) {
   $('#settings-quiz-description').value = quiz.description || '';
   $('#settings-auto-advance-toggle').checked = !!quiz.auto_advance_enabled;
   $('#settings-auto-advance-seconds').value = quiz.auto_advance_delay ?? 5;
+  $('#settings-player-layout').value = ['default', 'options_only'].includes(quiz.player_layout)
+    ? quiz.player_layout
+    : 'default';
 
   const list = $('#settings-questions-list');
   if (!quiz.questions || quiz.questions.length === 0) {
@@ -214,20 +219,29 @@ async function saveQuizSettings() {
     enabled: isSettingsAutoAdvanceEnabled(),
     delay: getSettingsAutoAdvanceDelay(),
   };
+  const playerLayout = $('#settings-player-layout').value;
 
   if (!title) {
     showError('#quiz-settings-error', 'Quiz title is required');
     return;
   }
 
-  const questions = Array.from(
-    $('#settings-questions-list').querySelectorAll('.settings-question')
-  ).map((el) => {
-    const id = el.dataset.id;
-    const timeLimitSec = parseInt(el.querySelector('.settings-time-limit').value, 10);
-    const points = parseInt(el.querySelector('.settings-points').value, 10);
-    return { id, timeLimitSec, points };
-  });
+  const questions = Array.from($('#settings-questions-list').querySelectorAll('.settings-question'))
+    .map((el) => {
+      const id = el.dataset.id;
+      const timeInput = el.querySelector('.settings-time-limit');
+      const pointsInput = el.querySelector('.settings-points');
+      if (!id || !timeInput || !pointsInput) return null;
+      const timeLimitSec = parseInt(timeInput.value, 10);
+      const points = parseInt(pointsInput.value, 10);
+      return { id, timeLimitSec, points };
+    })
+    .filter(Boolean);
+
+  if (questions.length === 0) {
+    showError('#quiz-settings-error', 'Quiz must contain at least one question');
+    return;
+  }
 
   for (const q of questions) {
     if (Number.isNaN(q.timeLimitSec) || q.timeLimitSec < 5 || q.timeLimitSec > 300) {
@@ -243,7 +257,7 @@ async function saveQuizSettings() {
   try {
     await api(`/api/quizzes/${currentSettingsQuiz.id}`, {
       method: 'PUT',
-      body: JSON.stringify({ title, description, autoAdvance, questions }),
+      body: JSON.stringify({ title, description, autoAdvance, playerLayout, questions }),
     });
 
     $('#quiz-settings-success').textContent = 'Quiz settings saved successfully!';
@@ -356,13 +370,69 @@ function emitNextQuestion() {
   socket.emit('host:next-question');
 }
 
+function startHostTimer(durationSec) {
+  clearInterval(hostTimerInterval);
+  const start = Date.now();
+  const totalMs = durationSec * 1000;
+
+  const fill = $('#host-timer-fill');
+  const display = $('#host-timer');
+
+  display.textContent = durationSec;
+  fill.style.width = '100%';
+  fill.classList.remove('warning');
+
+  hostTimerInterval = setInterval(() => {
+    const elapsed = Date.now() - start;
+    const remaining = Math.max(0, totalMs - elapsed);
+    const remainingSec = Math.ceil(remaining / 1000);
+    const pct = (remaining / totalMs) * 100;
+
+    display.textContent = remainingSec;
+    fill.style.width = `${pct}%`;
+
+    if (pct < 30) {
+      fill.classList.add('warning');
+    }
+
+    if (remaining <= 0) {
+      clearInterval(hostTimerInterval);
+      hostTimerInterval = null;
+    }
+  }, 100);
+}
+
+function renderHostAnswerStatus({ answeredCount, totalPlayers, players }) {
+  currentHostPlayers = players;
+  $('#host-answer-count').textContent = `${answeredCount} / ${totalPlayers} answered`;
+
+  const statusEl = $('#host-player-status');
+  if (!players || players.length === 0) {
+    statusEl.innerHTML = '<p style="color: var(--text-dim);">No players connected</p>';
+    return;
+  }
+
+  statusEl.innerHTML = players
+    .map(
+      (p) => `
+      <div class="host-player-status-item">
+        <span class="host-player-status-dot ${p.answered ? 'answered' : 'pending'}"></span>
+        <span class="host-player-status-name">${p.nickname}</span>
+      </div>
+    `
+    )
+    .join('');
+}
+
 function renderHostQuestion(question) {
   currentQuestion = question;
   showScreen(screens.game, 'host-question-view');
   $('#host-question-number').textContent =
     `Question ${question.index + 1} / ${question.totalQuestions}`;
   $('#host-question-text').textContent = question.text;
-  $('#host-timer').textContent = question.timeLimit;
+  $('#host-answer-count').textContent = '0 / 0 answered';
+  $('#host-answer-breakdown').classList.add('hidden');
+  $('#host-player-status').innerHTML = '';
 
   const container = $('#host-options');
   container.innerHTML = question.options
@@ -372,6 +442,35 @@ function renderHostQuestion(question) {
     `
     )
     .join('');
+
+  startHostTimer(question.timeLimit);
+}
+
+function renderAnswerBreakdown({ breakdown, totalAnswered }) {
+  const container = $('#host-answer-breakdown');
+  container.classList.remove('hidden');
+
+  if (!breakdown || breakdown.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+
+  container.innerHTML = `
+    <h3 style="margin: 0 0 1rem; color: var(--text-dim); font-size: 0.85rem">ANSWER BREAKDOWN (${totalAnswered} answered)</h3>
+    ${breakdown
+      .map(
+        (b) => `
+        <div class="answer-breakdown-row">
+          <div class="answer-breakdown-label">${b.text}</div>
+          <div class="answer-breakdown-bar-track">
+            <div class="answer-breakdown-bar-fill" style="width: ${b.percentage}%"></div>
+          </div>
+          <div class="answer-breakdown-value">${b.percentage}%</div>
+        </div>
+      `
+      )
+      .join('')}
+  `;
 }
 
 function renderLeaderboard(leaderboard) {
@@ -477,8 +576,16 @@ socket.on('server:question', (question) => {
   renderHostQuestion(question);
 });
 
+socket.on('server:host-answer-update', (data) => {
+  renderHostAnswerStatus(data);
+});
+
 socket.on('server:answer-reveal', ({ correctOptionIds }) => {
   if (!currentQuestion) return;
+  clearInterval(hostTimerInterval);
+  hostTimerInterval = null;
+  $('#host-timer-fill').style.width = '0%';
+
   $('#host-options')
     .querySelectorAll('.option-btn')
     .forEach((btn) => {
@@ -490,7 +597,13 @@ socket.on('server:answer-reveal', ({ correctOptionIds }) => {
     });
 });
 
+socket.on('server:answer-breakdown', (data) => {
+  renderAnswerBreakdown(data);
+});
+
 socket.on('server:leaderboard', ({ leaderboard }) => {
+  clearInterval(hostTimerInterval);
+  hostTimerInterval = null;
   renderLeaderboard(leaderboard);
 });
 

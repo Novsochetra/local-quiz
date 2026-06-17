@@ -593,6 +593,99 @@
   gap: 12px;
 }
 
+.host-answer-count {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--cyan);
+  text-shadow: 0 0 8px var(--cyan);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.host-player-status {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.host-player-status-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: rgba(0, 243, 255, 0.03);
+  border: 1px solid var(--border);
+  font-size: 0.8rem;
+}
+
+.host-player-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.host-player-status-dot.answered {
+  background: var(--green);
+  box-shadow: 0 0 8px var(--green);
+}
+
+.host-player-status-dot.pending {
+  background: var(--text-dim);
+}
+
+.host-player-status-name {
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.host-answer-breakdown {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+}
+
+.answer-breakdown-row {
+  display: grid;
+  grid-template-columns: 120px 1fr 50px;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.answer-breakdown-label {
+  font-size: 0.8rem;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.answer-breakdown-bar-track {
+  height: 12px;
+  background: rgba(0, 243, 255, 0.05);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.answer-breakdown-bar-fill {
+  height: 100%;
+  background: var(--cyan);
+  box-shadow: 0 0 10px var(--cyan);
+  transition: width 0.5s ease-out;
+}
+
+.answer-breakdown-value {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.8rem;
+  color: var(--cyan);
+  text-align: right;
+}
+
 @media (max-width: 600px) {
   .options-grid {
     grid-template-columns: 1fr;

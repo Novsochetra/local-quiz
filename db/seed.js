@@ -32,8 +32,8 @@ function seedSampleQuiz(hostId) {
   const quizId = uuidv4();
   const code = 'CYBER';
   db.prepare(
-    'INSERT INTO quizzes (id, title, description, created_by, code) VALUES (?, ?, ?, ?, ?)'
-  ).run(quizId, 'Cyberpunk Starter', 'A sample quiz to test the system.', hostId, code);
+    'INSERT INTO quizzes (id, title, description, created_by, code, player_layout) VALUES (?, ?, ?, ?, ?, ?)'
+  ).run(quizId, 'Cyberpunk Starter', 'A sample quiz to test the system.', hostId, code, 'default');
 
   const questions = [
     {

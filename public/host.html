@@ -110,8 +110,25 @@
               "
             >
               <h3 id="host-question-number" style="margin: 0; color: var(--text-dim)"></h3>
+              <div id="host-answer-count" class="host-answer-count">0 / 0 answered</div>
+            </div>
+
+            <div class="timer-bar" style="margin-bottom: 1rem">
+              <div id="host-timer-fill" class="timer-bar-fill" style="width: 100%"></div>
+            </div>
+
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 1rem;
+              "
+            >
+              <div></div>
               <div id="host-timer" class="countdown-number" style="font-size: 2.5rem">0</div>
             </div>
+
             <div class="cyber-card" style="margin-bottom: 1rem">
               <h2
                 id="host-question-text"
@@ -119,6 +136,15 @@
               ></h2>
             </div>
             <div id="host-options" class="options-grid"></div>
+
+            <div id="host-answer-breakdown" class="host-answer-breakdown hidden"></div>
+
+            <div class="cyber-card" style="margin-top: 1.5rem">
+              <h3 style="margin: 0 0 1rem; color: var(--text-dim); font-size: 0.85rem">
+                PLAYER STATUS
+              </h3>
+              <div id="host-player-status" class="host-player-status"></div>
+            </div>
           </div>
 
           <div id="host-leaderboard-view" class="hidden">
@@ -185,6 +211,17 @@
                 max="15"
                 style="max-width: 120px"
               />
+            </div>
+          </div>
+
+          <div class="cyber-card" style="margin-bottom: 1.5rem">
+            <h3>Player Question Layout</h3>
+            <div class="form-group" style="margin-bottom: 0">
+              <label>How players see each question</label>
+              <select id="settings-player-layout" class="cyber-input">
+                <option value="default">Default — show question and answers</option>
+                <option value="options_only">Answer Only — players look at host screen</option>
+              </select>
             </div>
           </div>
 

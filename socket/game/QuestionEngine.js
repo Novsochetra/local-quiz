@@ -12,6 +12,7 @@ export class QuestionEngine {
     this.questionStartTime = 0;
     this.timer = null;
     this.answeredPlayers = new Set();
+    this.optionSelectionCounts = new Map();
     this.phase = 'idle'; // idle | question | reveal | leaderboard
   }
 
@@ -28,6 +29,7 @@ export class QuestionEngine {
 
     this.currentQuestionIndex++;
     this.answeredPlayers.clear();
+    this.optionSelectionCounts.clear();
     this.phase = 'question';
 
     const question = this.session.quiz.questions[this.currentQuestionIndex];
@@ -39,6 +41,7 @@ export class QuestionEngine {
       mediaUrl: question.media_url,
       timeLimit: question.time_limit_sec,
       points: question.points,
+      playerLayout: this.session.quiz.player_layout || 'default',
       options: question.options.map((opt) => ({
         id: opt.id,
         text: opt.text,
@@ -79,11 +82,18 @@ export class QuestionEngine {
 
     this.answeredPlayers.add(player.id);
 
+    for (const optionId of selected) {
+      const current = this.optionSelectionCounts.get(optionId) || 0;
+      this.optionSelectionCounts.set(optionId, current + 1);
+    }
+
     socket.emit('player:answer-result', {
       isCorrect,
       scoreEarned,
       totalScore: newScore,
     });
+
+    this.emitHostAnswerUpdate();
 
     const allAnswered =
       this.session.players.length > 0 && this.answeredPlayers.size >= this.session.players.length;
@@ -93,6 +103,21 @@ export class QuestionEngine {
     }
   }
 
+  emitHostAnswerUpdate() {
+    const totalPlayers = this.session.players.length;
+    const players = this.session.players.map((p) => ({
+      id: p.id,
+      nickname: p.nickname,
+      answered: this.answeredPlayers.has(p.id),
+    }));
+
+    this.io.to(this.session.pin).emit('server:host-answer-update', {
+      answeredCount: this.answeredPlayers.size,
+      totalPlayers,
+      players,
+    });
+  }
+
   revealAnswer() {
     if (this.phase !== 'question') return;
     this.phase = 'reveal';
@@ -100,8 +125,24 @@ export class QuestionEngine {
     const question = this.session.quiz.questions[this.currentQuestionIndex];
     const correctIds = question.options.filter((opt) => opt.is_correct === 1).map((opt) => opt.id);
 
+    const totalAnswered = this.answeredPlayers.size || 1;
+    const breakdown = question.options.map((opt) => {
+      const count = this.optionSelectionCounts.get(opt.id) || 0;
+      return {
+        id: opt.id,
+        text: opt.text,
+        count,
+        percentage: Math.round((count / totalAnswered) * 100),
+      };
+    });
+
     this.io.to(this.session.pin).emit('server:answer-reveal', {
       correctOptionIds: correctIds,
+    });
+
+    this.io.to(this.session.pin).emit('server:answer-breakdown', {
+      breakdown,
+      totalAnswered,
     });
 
     this.timer = setTimeout(() => {

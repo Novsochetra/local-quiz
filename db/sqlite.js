@@ -23,5 +23,8 @@ if (!quizColumns.find((c) => c.name === 'auto_advance_enabled')) {
 if (!quizColumns.find((c) => c.name === 'auto_advance_delay')) {
   db.prepare('ALTER TABLE quizzes ADD COLUMN auto_advance_delay INTEGER NOT NULL DEFAULT 5').run();
 }
+if (!quizColumns.find((c) => c.name === 'player_layout')) {
+  db.prepare("ALTER TABLE quizzes ADD COLUMN player_layout TEXT DEFAULT 'default'").run();
+}
 
 export default db;

@@ -36,14 +36,18 @@ export function deleteQuiz(id) {
   return result.changes > 0;
 }
 
-export function updateQuiz(id, { title, description, autoAdvanceEnabled, autoAdvanceDelay }) {
+export function updateQuiz(
+  id,
+  { title, description, autoAdvanceEnabled, autoAdvanceDelay, playerLayout }
+) {
   const enabled = autoAdvanceEnabled ? 1 : 0;
   const delay = Math.min(15, Math.max(3, autoAdvanceDelay ?? 5));
+  const layout = ['default', 'options_only'].includes(playerLayout) ? playerLayout : 'default';
   const result = db
     .prepare(
-      'UPDATE quizzes SET title = ?, description = ?, auto_advance_enabled = ?, auto_advance_delay = ? WHERE id = ?'
+      'UPDATE quizzes SET title = ?, description = ?, auto_advance_enabled = ?, auto_advance_delay = ?, player_layout = ? WHERE id = ?'
     )
-    .run(title, description || null, enabled, delay, id);
+    .run(title, description || null, enabled, delay, layout, id);
   return result.changes > 0;
 }
 
