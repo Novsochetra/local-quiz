@@ -1,6 +1,7 @@
 import { $, showScreen, formatNumber } from './utils.js';
 import { getSocket } from './socket.js';
 import { initAudio, playSound } from './audio.js';
+import { showJoinNotification } from './notifications.js';
 
 const socket = getSocket();
 
@@ -12,6 +13,8 @@ const screens = {
   gameOver: $('#game-over-screen'),
 };
 
+const NOTIFICATION_COLORS = ['--cyan', '--magenta', '--purple', '--yellow', '--green', '--red'];
+
 let playerId = null;
 let pin = null;
 let nickname = null;
@@ -21,6 +24,34 @@ let timerInterval = null;
 let hasInteracted = false;
 let lastAnswerResult = null;
 let resultCountdownInterval = null;
+
+function getCssVar(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
+function getRandomNotificationColor() {
+  const colorVar = NOTIFICATION_COLORS[Math.floor(Math.random() * NOTIFICATION_COLORS.length)];
+  return getCssVar(colorVar) || getCssVar('--cyan');
+}
+
+function renderWaitingPlayers(players) {
+  $('#waiting-player-count').textContent = players.length;
+  const list = $('#waiting-player-list');
+  if (players.length === 0) {
+    list.innerHTML = '<p style="color: var(--text-dim); text-align: center;">No players yet</p>';
+    return;
+  }
+  list.innerHTML = players
+    .map(
+      (p) => `
+      <div class="player-chip">
+        <span>${p.nickname}</span>
+        ${p.id === playerId ? '<span style="color: var(--text-dim); font-size: 0.7rem;">YOU</span>' : ''}
+      </div>
+    `
+    )
+    .join('');
+}
 
 function switchTo(screenName) {
   Object.values(screens).forEach((s) => s.classList.add('hidden'));
@@ -300,9 +331,20 @@ $('#options-container').addEventListener('click', (e) => {
 // Socket events
 socket.on('player:joined', ({ playerId: id, nickname: nick }) => {
   playerId = id;
+  nickname = nick;
   $('#waiting-nickname').textContent = nick;
   $('#waiting-pin').textContent = pin;
   switchTo('waiting');
+});
+
+socket.on('server:lobby-update', ({ players: lobbyPlayers }) => {
+  renderWaitingPlayers(lobbyPlayers);
+});
+
+socket.on('server:player-joined', ({ nickname: joinedNickname }) => {
+  if (joinedNickname === nickname) return;
+  showJoinNotification(joinedNickname, getRandomNotificationColor());
+  playSound('join');
 });
 
 socket.on('player:join-error', ({ message }) => {
