@@ -2,6 +2,7 @@ import { $, api, showScreen } from './utils.js';
 import { getSocket } from './socket.js';
 import { initAudio, playSound } from './audio.js';
 import { celebrate } from './confetti.js';
+import { showNotification } from './notifications.js';
 
 const socket = getSocket();
 
@@ -304,6 +305,12 @@ async function saveQuizSettings() {
 
     $('#quiz-settings-success').textContent = 'Quiz settings saved successfully!';
     $('#quiz-settings-success').classList.remove('hidden');
+
+    showNotification({
+      title: 'CONFIG UPDATED',
+      message: 'Quiz settings saved successfully.',
+      color: '#00ff9d',
+    });
 
     await loadDashboard();
 

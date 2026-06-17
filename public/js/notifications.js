@@ -50,11 +50,11 @@ notificationHost.addEventListener('click', (e) => {
   }
 });
 
-export function showJoinNotification(nickname, color) {
+function buildNotification({ title, message, color, duration = NOTIFICATION_DURATION_MS }) {
   const id = ++notificationId;
   const notif = document.createElement('div');
   notif.className = 'join-notification';
-  notif.id = `join-notif-${id}`;
+  notif.id = `notif-${id}`;
   notif.style.cssText = `
     --notif-color: ${color};
     border-color: ${color};
@@ -65,12 +65,10 @@ export function showJoinNotification(nickname, color) {
   notif.innerHTML = `
     <div class="join-notification-header">
       <span class="join-notification-prefix">►</span>
-      <span class="join-notification-title">JOIN</span>
+      <span class="join-notification-title">${escapeHtml(title)}</span>
       <button class="join-notification-close" data-id="${id}">[×]</button>
     </div>
-    <div class="join-notification-body">
-      <span class="join-notification-name">${escapeHtml(nickname)}</span> joined
-    </div>
+    <div class="join-notification-body">${message}</div>
     <div class="join-notification-progress">
       <div class="join-notification-progress-fill" style="background: ${color}; box-shadow: 0 0 6px ${color};"></div>
     </div>
@@ -94,7 +92,7 @@ export function showJoinNotification(nickname, color) {
   function animateProgress(timestamp) {
     if (!startTime) startTime = timestamp;
     const elapsed = timestamp - startTime;
-    const pct = Math.min(100, (elapsed / NOTIFICATION_DURATION_MS) * 100);
+    const pct = Math.min(100, (elapsed / duration) * 100);
     fill.style.width = pct + '%';
     if (pct < 100) {
       requestAnimationFrame(animateProgress);
@@ -102,5 +100,26 @@ export function showJoinNotification(nickname, color) {
   }
   requestAnimationFrame(animateProgress);
 
-  n.timer = setTimeout(() => removeNotification(id), NOTIFICATION_DURATION_MS);
+  n.timer = setTimeout(() => removeNotification(id), duration);
+  return n;
+}
+
+export function showNotification({
+  title,
+  message,
+  color = '#00f3ff',
+  duration = NOTIFICATION_DURATION_MS,
+  html = false,
+}) {
+  const safeMessage = html ? message : escapeHtml(message);
+  buildNotification({ title, message: safeMessage, color, duration });
+}
+
+export function showJoinNotification(nickname, color) {
+  showNotification({
+    title: 'JOIN',
+    message: `<span class="join-notification-name">${escapeHtml(nickname)}</span> joined`,
+    color,
+    html: true,
+  });
 }
