@@ -13,6 +13,8 @@ const screens = {
 
 let currentPin = null;
 let currentQuestion = null;
+let autoAdvanceTimer = null;
+let autoAdvanceCountdownInterval = null;
 
 function switchTo(screenName) {
   Object.values(screens).forEach((s) => s.classList.add('hidden'));
@@ -148,6 +150,68 @@ function renderLobby(players) {
   });
 }
 
+function getAutoAdvanceDelay() {
+  const input = $('#auto-advance-seconds');
+  const value = parseInt(input.value, 10);
+  return Math.min(15, Math.max(3, Number.isNaN(value) ? 5 : value));
+}
+
+function isAutoAdvanceEnabled() {
+  return $('#auto-advance-toggle').checked;
+}
+
+function cancelAutoAdvance() {
+  if (autoAdvanceTimer) {
+    clearTimeout(autoAdvanceTimer);
+    autoAdvanceTimer = null;
+  }
+  if (autoAdvanceCountdownInterval) {
+    clearInterval(autoAdvanceCountdownInterval);
+    autoAdvanceCountdownInterval = null;
+  }
+
+  const btn = $('#next-question-btn');
+  btn.textContent = 'NEXT QUESTION';
+  btn.disabled = false;
+
+  if (currentPin) {
+    socket.emit('host:auto-advance-cancelled');
+  }
+}
+
+function startAutoAdvance() {
+  if (!isAutoAdvanceEnabled()) return;
+
+  const seconds = getAutoAdvanceDelay();
+  const btn = $('#next-question-btn');
+  let remaining = seconds;
+
+  btn.textContent = `NEXT QUESTION (${remaining})`;
+
+  socket.emit('host:auto-advance-started', { seconds });
+
+  autoAdvanceCountdownInterval = setInterval(() => {
+    remaining--;
+    if (remaining > 0) {
+      btn.textContent = `NEXT QUESTION (${remaining})`;
+    } else {
+      clearInterval(autoAdvanceCountdownInterval);
+      autoAdvanceCountdownInterval = null;
+      btn.textContent = 'NEXT QUESTION';
+    }
+  }, 1000);
+
+  autoAdvanceTimer = setTimeout(() => {
+    autoAdvanceTimer = null;
+    emitNextQuestion();
+  }, seconds * 1000);
+}
+
+function emitNextQuestion() {
+  cancelAutoAdvance();
+  socket.emit('host:next-question');
+}
+
 function renderHostQuestion(question) {
   currentQuestion = question;
   showScreen(screens.game, 'host-question-view');
@@ -181,6 +245,8 @@ function renderLeaderboard(leaderboard) {
     `
     )
     .join('');
+
+  startAutoAdvance();
 }
 
 function renderGameOver(podium, leaderboard) {
@@ -223,8 +289,19 @@ $('#import-btn').addEventListener('click', importQuiz);
 $('#start-game-btn').addEventListener('click', () => {
   socket.emit('host:start-game');
 });
-$('#next-question-btn').addEventListener('click', () => {
-  socket.emit('host:next-question');
+$('#next-question-btn').addEventListener('click', emitNextQuestion);
+$('#auto-advance-toggle').addEventListener('change', () => {
+  if (isAutoAdvanceEnabled()) {
+    startAutoAdvance();
+  } else {
+    cancelAutoAdvance();
+  }
+});
+$('#auto-advance-seconds').addEventListener('change', () => {
+  if (isAutoAdvanceEnabled() && (autoAdvanceTimer || autoAdvanceCountdownInterval)) {
+    cancelAutoAdvance();
+    startAutoAdvance();
+  }
 });
 
 // Socket events
@@ -269,6 +346,7 @@ socket.on('server:leaderboard', ({ leaderboard }) => {
 });
 
 socket.on('server:game-over', ({ podium, leaderboard }) => {
+  cancelAutoAdvance();
   renderGameOver(podium, leaderboard);
   playSound('winner');
 });

@@ -385,6 +385,103 @@
   text-shadow: 0 0 8px var(--red);
 }
 
+/* Round result screen */
+.result-badge {
+  font-size: 2.5rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  margin: 1rem 0 2rem;
+  padding: 1rem;
+  border: 1px solid;
+  text-align: center;
+}
+
+.result-badge.correct {
+  color: var(--green);
+  border-color: var(--green);
+  background: var(--green-soft);
+  box-shadow: 0 0 30px rgba(0, 255, 157, 0.2);
+  text-shadow: 0 0 10px var(--green);
+}
+
+.result-badge.wrong {
+  color: var(--red);
+  border-color: var(--red);
+  background: var(--red-soft);
+  box-shadow: 0 0 30px rgba(255, 42, 109, 0.15);
+  text-shadow: 0 0 10px var(--red);
+}
+
+.result-summary {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.result-points {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--yellow);
+  text-shadow: 0 0 10px var(--yellow);
+  margin-bottom: 0.75rem;
+}
+
+.result-total,
+.result-rank {
+  font-size: 1.1rem;
+  color: var(--text-dim);
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.05em;
+}
+
+.result-terminal {
+  font-family: 'Courier New', Courier, monospace;
+  color: var(--cyan);
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 8px var(--cyan);
+  margin-top: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.terminal-prompt {
+  color: var(--green);
+}
+
+.terminal-cursor::after {
+  content: '_';
+  animation: blink 1s step-end infinite;
+  color: var(--cyan);
+}
+
+/* Host auto-advance controls */
+.auto-advance-card {
+  max-width: 420px;
+  margin: 1.5rem auto 0;
+}
+
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.toggle-row input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--cyan);
+  cursor: pointer;
+}
+
 @media (max-width: 600px) {
   .options-grid {
     grid-template-columns: 1fr;
@@ -399,5 +496,9 @@
     width: 80%;
     height: auto !important;
     min-height: 100px;
+  }
+
+  .result-badge {
+    font-size: 2rem;
   }
 }

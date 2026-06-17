@@ -87,4 +87,28 @@ export function registerHostHandlers(socket, io) {
       socket.emit('server:error', { message: err.message });
     }
   });
+
+  socket.on('host:auto-advance-started', ({ seconds }) => {
+    try {
+      const pin = socket.data.sessionPin;
+      const session = GameSession.getByPin(pin);
+      if (!session || !socket.data.isHost) return;
+
+      socket.to(pin).emit('server:auto-advance-started', { seconds });
+    } catch (err) {
+      console.error('host:auto-advance-started error:', err.message);
+    }
+  });
+
+  socket.on('host:auto-advance-cancelled', () => {
+    try {
+      const pin = socket.data.sessionPin;
+      const session = GameSession.getByPin(pin);
+      if (!session || !socket.data.isHost) return;
+
+      socket.to(pin).emit('server:auto-advance-cancelled');
+    } catch (err) {
+      console.error('host:auto-advance-cancelled error:', err.message);
+    }
+  });
 }

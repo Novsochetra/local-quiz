@@ -123,21 +123,25 @@
       </section>
 
       <section id="result-screen" class="screen">
-        <div class="container" style="padding-top: 4rem; text-align: center">
+        <div class="container" style="padding-top: 2rem; text-align: center">
           <header class="header">
-            <h1 class="cyber-title" data-text="RESULTS">RESULTS</h1>
+            <h1 class="cyber-title" data-text="ROUND RESULT">ROUND RESULT</h1>
+            <p id="result-question-progress" class="cyber-subtitle"></p>
           </header>
-          <div id="result-message" style="font-size: 1.5rem; margin: 2rem 0"></div>
-          <div id="result-score" style="font-size: 1.2rem; color: var(--text-dim)"></div>
-          <div
-            id="result-rank"
-            style="
-              font-size: 1.2rem;
-              color: var(--cyan);
-              margin-top: 1rem;
-              text-shadow: 0 0 8px var(--cyan);
-            "
-          ></div>
+
+          <div id="result-badge" class="result-badge"></div>
+
+          <div class="cyber-card result-summary">
+            <div id="result-points-earned" class="result-points"></div>
+            <div id="result-total-score" class="result-total"></div>
+            <div id="result-rank" class="result-rank"></div>
+          </div>
+
+          <div class="result-terminal">
+            <span class="terminal-prompt">&gt;</span>
+            <span id="result-terminal-text">WAITING_FOR_HOST...</span>
+            <span class="terminal-cursor"></span>
+          </div>
         </div>
       </section>
 

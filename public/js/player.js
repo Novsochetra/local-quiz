@@ -1,4 +1,4 @@
-import { $, showScreen } from './utils.js';
+import { $, showScreen, formatNumber } from './utils.js';
 import { getSocket } from './socket.js';
 import { initAudio, playSound } from './audio.js';
 
@@ -19,6 +19,8 @@ let currentQuestion = null;
 let answered = false;
 let timerInterval = null;
 let hasInteracted = false;
+let lastAnswerResult = null;
+let resultCountdownInterval = null;
 
 function switchTo(screenName) {
   Object.values(screens).forEach((s) => s.classList.add('hidden'));
@@ -96,6 +98,7 @@ function startTimer(durationSec) {
 function renderQuestion(question) {
   answered = false;
   currentQuestion = question;
+  lastAnswerResult = null;
   switchTo('question');
 
   $('#question-counter').textContent = `${question.index + 1} / ${question.totalQuestions}`;
@@ -183,23 +186,64 @@ function submitMultiSelect() {
   submitAnswer(null);
 }
 
-function renderAnswerResult({ isCorrect, scoreEarned, totalScore }) {
+function renderAnswerResult(result) {
+  lastAnswerResult = result;
+  const { isCorrect, scoreEarned } = result;
   const feedback = $('#answer-feedback');
   feedback.classList.remove('hidden');
   feedback.textContent = isCorrect ? `+${scoreEarned.toLocaleString()} pts` : 'Wrong!';
-  feedback.style.color = isCorrect ? 'var(--neon-green)' : 'var(--neon-red)';
+  feedback.style.color = isCorrect ? 'var(--green)' : 'var(--red)';
 
   playSound(isCorrect ? 'correct' : 'wrong');
 }
 
-function renderLeaderboard(leaderboard) {
+function renderLeaderboard({ leaderboard, currentQuestionIndex, totalQuestions }) {
   const me = leaderboard.find((p) => p.id === playerId);
   switchTo('result');
 
-  const message = me ? `You are #${me.rank}` : 'Round complete';
-  $('#result-message').textContent = message;
-  $('#result-score').textContent = me ? `Score: ${me.score.toLocaleString()}` : '';
-  $('#result-rank').textContent = me ? `Rank: ${me.rank}` : '';
+  const isCorrect = lastAnswerResult?.isCorrect ?? false;
+  const scoreEarned = lastAnswerResult?.scoreEarned ?? 0;
+
+  const badge = $('#result-badge');
+  badge.className = `result-badge ${isCorrect ? 'correct' : 'wrong'} animate-pop`;
+  badge.textContent = isCorrect ? 'CORRECT' : 'WRONG';
+
+  $('#result-points-earned').textContent = isCorrect
+    ? `+${formatNumber(scoreEarned)} PTS`
+    : '+0 PTS';
+  $('#result-total-score').textContent = me ? `TOTAL: ${formatNumber(me.score)} PTS` : '';
+  $('#result-rank').textContent = me ? `RANK: #${me.rank}` : '';
+  $('#result-question-progress').textContent =
+    typeof currentQuestionIndex === 'number' && typeof totalQuestions === 'number'
+      ? `QUESTION ${currentQuestionIndex + 1} / ${totalQuestions}`
+      : '';
+
+  resetResultTerminal();
+}
+
+function resetResultTerminal() {
+  clearInterval(resultCountdownInterval);
+  resultCountdownInterval = null;
+  $('#result-terminal-text').textContent = 'WAITING_FOR_HOST...';
+}
+
+function startResultCountdown(seconds) {
+  clearInterval(resultCountdownInterval);
+  const terminalText = $('#result-terminal-text');
+  let remaining = Math.max(1, seconds);
+
+  terminalText.textContent = `NEXT_ROUND_IN: ${remaining}s`;
+
+  resultCountdownInterval = setInterval(() => {
+    remaining--;
+    if (remaining <= 0) {
+      clearInterval(resultCountdownInterval);
+      resultCountdownInterval = null;
+      terminalText.textContent = 'LOADING_NEXT_ROUND...';
+    } else {
+      terminalText.textContent = `NEXT_ROUND_IN: ${remaining}s`;
+    }
+  }, 1000);
 }
 
 function renderGameOver(podium, leaderboard) {
@@ -275,6 +319,7 @@ socket.on('server:game-started', () => {
 });
 
 socket.on('server:question', (question) => {
+  resetResultTerminal();
   renderQuestion(question);
 });
 
@@ -296,11 +341,20 @@ socket.on('server:answer-reveal', ({ correctOptionIds }) => {
   });
 });
 
-socket.on('server:leaderboard', ({ leaderboard }) => {
-  renderLeaderboard(leaderboard);
+socket.on('server:leaderboard', (data) => {
+  renderLeaderboard(data);
+});
+
+socket.on('server:auto-advance-started', ({ seconds }) => {
+  startResultCountdown(seconds);
+});
+
+socket.on('server:auto-advance-cancelled', () => {
+  resetResultTerminal();
 });
 
 socket.on('server:game-over', ({ podium, leaderboard }) => {
+  resetResultTerminal();
   renderGameOver(podium, leaderboard);
 });
 
