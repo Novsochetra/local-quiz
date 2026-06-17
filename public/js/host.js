@@ -77,12 +77,15 @@ function renderQuizList(quizzes) {
     .map(
       (q) => `
       <div class="cyber-card animate-fade-in" style="margin-bottom: 1rem;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <div>
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
+          <div style="flex: 1; min-width: 0;">
             <h4 style="margin: 0; color: var(--neon-cyan);">${q.title}</h4>
             <p style="margin: 0.5rem 0 0; color: var(--text-dim); font-size: 0.9rem;">${q.description || 'No description'}</p>
           </div>
-          <button class="cyber-btn start-session-btn" data-id="${q.id}">Host</button>
+          <div class="quiz-actions">
+            <button class="cyber-btn settings-btn" data-id="${q.id}">Settings</button>
+            <button class="cyber-btn start-session-btn" data-id="${q.id}">Host</button>
+          </div>
         </div>
       </div>
     `
@@ -91,6 +94,10 @@ function renderQuizList(quizzes) {
 
   list.querySelectorAll('.start-session-btn').forEach((btn) => {
     btn.addEventListener('click', () => createSession(btn.dataset.id));
+  });
+
+  list.querySelectorAll('.settings-btn').forEach((btn) => {
+    btn.addEventListener('click', () => openQuizSettings(btn.dataset.id));
   });
 }
 
@@ -121,6 +128,127 @@ async function importQuiz() {
 
 function createSession(quizId) {
   socket.emit('host:create-session', { quizId });
+}
+
+let currentSettingsQuiz = null;
+
+function openQuizSettings(quizId) {
+  hideError('#quiz-settings-error');
+  $('#quiz-settings-success').classList.add('hidden');
+
+  api(`/api/quizzes/${quizId}`)
+    .then((quiz) => {
+      currentSettingsQuiz = quiz;
+      renderQuizSettings(quiz);
+      $('#quiz-settings-modal').classList.add('active');
+    })
+    .catch((err) => {
+      alert(`Failed to load quiz settings: ${err.message}`);
+    });
+}
+
+function closeQuizSettings() {
+  $('#quiz-settings-modal').classList.remove('active');
+  currentSettingsQuiz = null;
+}
+
+function renderQuizSettings(quiz) {
+  $('#settings-quiz-id').value = quiz.id;
+  $('#settings-quiz-title').value = quiz.title;
+  $('#settings-quiz-description').value = quiz.description || '';
+
+  const list = $('#settings-questions-list');
+  if (!quiz.questions || quiz.questions.length === 0) {
+    list.innerHTML = '<p style="color: var(--text-dim);">No questions found.</p>';
+    return;
+  }
+
+  list.innerHTML = quiz.questions
+    .map(
+      (q, index) => `
+      <div class="settings-question" data-id="${q.id}">
+        <div class="settings-question-text">${index + 1}. ${q.text}</div>
+        <div class="settings-row">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label>Time Limit (sec)</label>
+            <input
+              type="number"
+              class="cyber-input settings-time-limit"
+              value="${q.time_limit_sec}"
+              min="5"
+              max="300"
+              data-id="${q.id}"
+            />
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label>Points</label>
+            <input
+              type="number"
+              class="cyber-input settings-points"
+              value="${q.points}"
+              min="0"
+              max="100000"
+              data-id="${q.id}"
+            />
+          </div>
+        </div>
+      </div>
+    `
+    )
+    .join('');
+}
+
+async function saveQuizSettings() {
+  hideError('#quiz-settings-error');
+  $('#quiz-settings-success').classList.add('hidden');
+
+  if (!currentSettingsQuiz) return;
+
+  const title = $('#settings-quiz-title').value.trim();
+  const description = $('#settings-quiz-description').value.trim();
+
+  if (!title) {
+    showError('#quiz-settings-error', 'Quiz title is required');
+    return;
+  }
+
+  const questions = Array.from(
+    $('#settings-questions-list').querySelectorAll('.settings-question')
+  ).map((el) => {
+    const id = el.dataset.id;
+    const timeLimitSec = parseInt(el.querySelector('.settings-time-limit').value, 10);
+    const points = parseInt(el.querySelector('.settings-points').value, 10);
+    return { id, timeLimitSec, points };
+  });
+
+  for (const q of questions) {
+    if (Number.isNaN(q.timeLimitSec) || q.timeLimitSec < 5 || q.timeLimitSec > 300) {
+      showError('#quiz-settings-error', 'Time limit must be between 5 and 300 seconds');
+      return;
+    }
+    if (Number.isNaN(q.points) || q.points < 0 || q.points > 100000) {
+      showError('#quiz-settings-error', 'Points must be between 0 and 100000');
+      return;
+    }
+  }
+
+  try {
+    await api(`/api/quizzes/${currentSettingsQuiz.id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ title, description, questions }),
+    });
+
+    $('#quiz-settings-success').textContent = 'Quiz settings saved successfully!';
+    $('#quiz-settings-success').classList.remove('hidden');
+
+    await loadDashboard();
+
+    setTimeout(() => {
+      closeQuizSettings();
+    }, 800);
+  } catch (err) {
+    showError('#quiz-settings-error', err.message);
+  }
 }
 
 function renderLobby(players) {
@@ -301,6 +429,14 @@ $('#auto-advance-seconds').addEventListener('change', () => {
   if (isAutoAdvanceEnabled() && (autoAdvanceTimer || autoAdvanceCountdownInterval)) {
     cancelAutoAdvance();
     startAutoAdvance();
+  }
+});
+$('#quiz-settings-close').addEventListener('click', closeQuizSettings);
+$('#quiz-settings-cancel').addEventListener('click', closeQuizSettings);
+$('#quiz-settings-save').addEventListener('click', saveQuizSettings);
+$('#quiz-settings-modal').addEventListener('click', (e) => {
+  if (e.target.id === 'quiz-settings-modal') {
+    closeQuizSettings();
   }
 });
 

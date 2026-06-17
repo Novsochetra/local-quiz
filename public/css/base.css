@@ -133,6 +133,12 @@ a:hover {
   display: flex;
 }
 
+.screen.centered {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
 ::selection {
   background: var(--cyan-soft);
   color: var(--cyan);

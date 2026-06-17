@@ -36,6 +36,20 @@ export function deleteQuiz(id) {
   return result.changes > 0;
 }
 
+export function updateQuiz(id, { title, description }) {
+  const result = db
+    .prepare('UPDATE quizzes SET title = ?, description = ? WHERE id = ?')
+    .run(title, description || null, id);
+  return result.changes > 0;
+}
+
+export function updateQuestion(id, { timeLimitSec, points }) {
+  const result = db
+    .prepare('UPDATE questions SET time_limit_sec = ?, points = ? WHERE id = ?')
+    .run(timeLimitSec, points, id);
+  return result.changes > 0;
+}
+
 function validateQuestion(q, index) {
   const errors = [];
   if (!VALID_TYPES.includes(q.type)) {
