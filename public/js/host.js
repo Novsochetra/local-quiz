@@ -776,30 +776,38 @@ function renderHostQuestion(question) {
   $('#host-answer-count').textContent = '0 / 0 answered';
   $('#host-player-status').innerHTML = '';
 
-  const container = $('#host-options');
-  container.innerHTML = question.options
-    .map(
-      (opt) => `
-      <div class="option-btn" data-id="${opt.id}">${escapeHtml(opt.text)}</div>
-    `
-    )
-    .join('');
+  const isOptionsOnly = question.playerLayout === 'options_only';
+
+  if (isOptionsOnly) {
+    $('#host-question-text').classList.add('read-mode-text');
+  }
+
+  if (!isOptionsOnly) {
+    const container = $('#host-options');
+    container.innerHTML = question.options
+      .map(
+        (opt) => `
+        <div class="option-btn" data-id="${opt.id}">${escapeHtml(opt.text)}</div>
+      `
+      )
+      .join('');
+
+    const qtext = $('#host-question-text');
+    const readDelay = currentQuizReadDelay;
+    if (readDelay > 0) {
+      qtext.classList.add('read-mode-text');
+      container.classList.add('options-hidden');
+      setTimeout(() => {
+        qtext.classList.remove('read-mode-text');
+        container.classList.remove('options-hidden');
+        $('.hqv-content').classList.add('reveal-layout');
+      }, readDelay * 1000);
+    } else {
+      $('.hqv-content').classList.add('reveal-layout');
+    }
+  }
 
   startHostTimer(question.timeLimit);
-
-  const qtext = $('#host-question-text');
-  const readDelay = currentQuizReadDelay;
-  if (readDelay > 0) {
-    qtext.classList.add('read-mode-text');
-    container.classList.add('options-hidden');
-    setTimeout(() => {
-      qtext.classList.remove('read-mode-text');
-      container.classList.remove('options-hidden');
-      $('.hqv-content').classList.add('reveal-layout');
-    }, readDelay * 1000);
-  } else {
-    $('.hqv-content').classList.add('reveal-layout');
-  }
 }
 
 let hostSplashCountdownInterval = null;
@@ -1055,17 +1063,19 @@ socket.on('server:answer-reveal', ({ correctOptionIds }) => {
   clearInterval(hostTimerInterval);
   hostTimerInterval = null;
   $('#host-timer-fill').style.width = '0%';
-  $('.hqv-content').classList.add('reveal-layout');
 
-  $('#host-options')
-    .querySelectorAll('.option-btn')
-    .forEach((btn) => {
-      btn.style.opacity = '0.5';
-      if (correctOptionIds.includes(btn.dataset.id)) {
-        btn.classList.add('correct');
-        btn.style.opacity = '1';
-      }
-    });
+  if (currentQuestion.playerLayout !== 'options_only') {
+    $('.hqv-content').classList.add('reveal-layout');
+    $('#host-options')
+      .querySelectorAll('.option-btn')
+      .forEach((btn) => {
+        btn.style.opacity = '0.5';
+        if (correctOptionIds.includes(btn.dataset.id)) {
+          btn.classList.add('correct');
+          btn.style.opacity = '1';
+        }
+      });
+  }
 });
 
 socket.on('server:leaderboard', ({ leaderboard }) => {

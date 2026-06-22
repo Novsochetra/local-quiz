@@ -153,26 +153,21 @@ function renderQuestion(question, options) {
   const questionContent = $('#question-content');
   const optionsOnlyHint = $('#options-only-hint');
 
-  if (isOptionsOnly) {
-    questionContent.classList.add('hidden');
-    optionsOnlyHint.classList.remove('hidden');
-  } else {
-    questionContent.classList.remove('hidden');
-    optionsOnlyHint.classList.add('hidden');
-    $('#question-text').textContent = question.text;
+  questionContent.classList.remove('hidden');
+  optionsOnlyHint.classList.add('hidden');
+  $('#question-text').textContent = question.text;
 
-    const img = $('#question-image');
-    if (question.mediaUrl) {
-      img.src = question.mediaUrl;
-      img.classList.remove('hidden');
-      img.onerror = () => {
-        img.classList.add('hidden');
-        img.onerror = null;
-      };
-    } else {
+  const img = $('#question-image');
+  if (question.mediaUrl) {
+    img.src = question.mediaUrl;
+    img.classList.remove('hidden');
+    img.onerror = () => {
       img.classList.add('hidden');
       img.onerror = null;
-    }
+    };
+  } else {
+    img.classList.add('hidden');
+    img.onerror = null;
   }
 
   const container = $('#options-container');
@@ -214,7 +209,21 @@ function renderQuestion(question, options) {
       }, readDelay * 1000);
     }
   } else {
-    $('.qs-center').classList.add('reveal-layout');
+    if (hasAnswered || readDelay <= 0) {
+      questionContent.classList.add('hidden');
+      optionsOnlyHint.classList.remove('hidden');
+      container.classList.remove('options-hidden');
+      $('.qs-center').classList.add('reveal-layout');
+    } else {
+      questionTextEl.classList.add('read-mode-text');
+      container.classList.add('options-hidden');
+      setTimeout(() => {
+        questionContent.classList.add('hidden');
+        optionsOnlyHint.classList.remove('hidden');
+        container.classList.remove('options-hidden');
+        $('.qs-center').classList.add('reveal-layout');
+      }, readDelay * 1000);
+    }
   }
 
   if (hasAnswered) {
