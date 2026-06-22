@@ -883,6 +883,12 @@
   font-size: 0.8rem;
 }
 
+.host-player-status-item.disconnected {
+  opacity: 0.5;
+  background: rgba(255, 68, 68, 0.06);
+  border-color: rgba(255, 68, 68, 0.3);
+}
+
 .host-player-status-dot {
   width: 12px;
   height: 12px;
@@ -899,11 +905,21 @@
   background: var(--text-dim);
 }
 
+.host-player-status-dot.disconnected {
+  background: var(--red);
+  box-shadow: 0 0 8px var(--red);
+}
+
 .host-player-status-name {
   color: var(--text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.host-player-status-name.disconnected {
+  color: var(--red);
+  text-decoration: line-through;
 }
 
 .host-answer-breakdown {

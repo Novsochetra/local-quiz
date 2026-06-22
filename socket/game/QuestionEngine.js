@@ -124,6 +124,7 @@ export class QuestionEngine {
       id: p.id,
       nickname: p.nickname,
       answered: this.answeredPlayers.has(p.id),
+      connected: p.connected,
     }));
 
     this.io.to(this.session.pin).emit('server:host-answer-update', {

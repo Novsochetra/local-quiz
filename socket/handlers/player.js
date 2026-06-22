@@ -40,6 +40,10 @@ export function registerPlayerHandlers(socket, io) {
           nickname: player.nickname,
           pin,
         });
+      } else if (session.status === 'playing') {
+        io.to(pin).emit('server:player-reconnected', {
+          nickname: player.nickname,
+        });
       }
 
       if (session.status === 'playing') {
@@ -79,6 +83,12 @@ export function registerPlayerHandlers(socket, io) {
         pin,
       });
 
+      if (session.status === 'playing') {
+        io.to(pin).emit('server:player-reconnected', {
+          nickname: player.nickname,
+        });
+      }
+
       io.to(pin).emit('server:lobby-update', {
         players: session.getLeaderboard(),
         pin,
@@ -113,6 +123,12 @@ export function registerPlayerHandlers(socket, io) {
 
       if (session.status === 'playing') {
         session.markDisconnected(socket.id);
+        const player = session.players.find((p) => p.socket_id === socket.id);
+        if (player) {
+          io.to(pin).emit('server:player-disconnected', {
+            nickname: player.nickname,
+          });
+        }
       } else {
         session.removePlayerBySocket(socket.id);
         io.to(pin).emit('server:lobby-update', {

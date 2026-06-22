@@ -702,14 +702,19 @@ function renderHostAnswerStatus({ answeredCount, totalPlayers, players }) {
   }
 
   statusEl.innerHTML = players
-    .map(
-      (p) => `
-      <div class="host-player-status-item">
-        <span class="host-player-status-dot ${p.answered ? 'answered' : 'pending'}"></span>
-        <span class="host-player-status-name">${p.nickname}</span>
+    .map((p) => {
+      const dotClass = p.answered ? 'answered' : !p.connected ? 'disconnected' : 'pending';
+      const nameClass = !p.connected
+        ? 'host-player-status-name disconnected'
+        : 'host-player-status-name';
+      const label = p.connected ? p.nickname : `${p.nickname} (DC)`;
+      return `
+      <div class="host-player-status-item ${!p.connected ? 'disconnected' : ''}">
+        <span class="host-player-status-dot ${dotClass}"></span>
+        <span class="${nameClass}">${label}</span>
       </div>
-    `
-    )
+    `;
+    })
     .join('');
 }
 
@@ -920,6 +925,24 @@ socket.on('server:leaderboard', ({ leaderboard }) => {
   clearInterval(hostTimerInterval);
   hostTimerInterval = null;
   renderLeaderboard(leaderboard);
+});
+
+socket.on('server:player-disconnected', ({ nickname }) => {
+  showNotification({
+    title: 'DISCONNECT',
+    message: `<span class="join-notification-name">${escapeHtml(nickname)}</span> disconnected`,
+    color: '#ff4444',
+    html: true,
+  });
+});
+
+socket.on('server:player-reconnected', ({ nickname }) => {
+  showNotification({
+    title: 'RECONNECT',
+    message: `<span class="join-notification-name">${escapeHtml(nickname)}</span> reconnected`,
+    color: '#00ff9d',
+    html: true,
+  });
 });
 
 socket.on('server:game-over', ({ podium, leaderboard }) => {
