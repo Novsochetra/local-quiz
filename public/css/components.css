@@ -1122,13 +1122,9 @@
   flex-shrink: 0;
 }
 
-.host-player-status-dot.answered {
+.host-player-status-dot.connected {
   background: var(--green);
   box-shadow: 0 0 8px var(--green);
-}
-
-.host-player-status-dot.pending {
-  background: var(--text-dim);
 }
 
 .host-player-status-dot.disconnected {

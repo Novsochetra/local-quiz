@@ -47,6 +47,7 @@ export function registerPlayerHandlers(socket, io) {
       }
 
       if (session.status === 'playing') {
+        session.engine.emitHostAnswerUpdate();
         const state = session.engine.getReconnectState(player.id);
         socket.emit('player:reconnect-state', state);
       }
@@ -84,6 +85,7 @@ export function registerPlayerHandlers(socket, io) {
       });
 
       if (session.status === 'playing') {
+        session.engine.emitHostAnswerUpdate();
         io.to(pin).emit('server:player-reconnected', {
           nickname: player.nickname,
         });
@@ -123,6 +125,7 @@ export function registerPlayerHandlers(socket, io) {
 
       if (session.status === 'playing') {
         session.markDisconnected(socket.id);
+        session.engine.emitHostAnswerUpdate();
         const player = session.players.find((p) => p.socket_id === socket.id);
         if (player) {
           io.to(pin).emit('server:player-disconnected', {

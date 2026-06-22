@@ -703,7 +703,7 @@ function renderHostAnswerStatus({ answeredCount, totalPlayers, players }) {
 
   statusEl.innerHTML = players
     .map((p) => {
-      const dotClass = p.answered ? 'answered' : !p.connected ? 'disconnected' : 'pending';
+      const dotClass = p.connected ? 'connected' : 'disconnected';
       const nameClass = !p.connected
         ? 'host-player-status-name disconnected'
         : 'host-player-status-name';

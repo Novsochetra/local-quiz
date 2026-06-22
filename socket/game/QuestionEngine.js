@@ -65,6 +65,8 @@ export class QuestionEngine {
     this.questionStartTime = Date.now();
     this.io.to(this.session.pin).emit('server:question', questionPayload);
 
+    this.emitHostAnswerUpdate();
+
     this.timer = setTimeout(() => {
       this.revealAnswer();
     }, question.time_limit_sec * 1000);
