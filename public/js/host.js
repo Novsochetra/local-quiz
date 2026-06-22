@@ -1079,6 +1079,25 @@ socket.on('server:error', ({ message }) => {
   });
 });
 
+// QR code fullscreen overlay
+const qrOverlay = $('#qrcode-fullscreen-overlay');
+const qrCloseBtn = $('#qrcode-close-btn');
+const qrFullscreenImg = $('#lobby-qr-code-fullscreen');
+
+$('#lobby-qr-code').addEventListener('click', () => {
+  qrFullscreenImg.src = $('#lobby-qr-code').src;
+  $('#qrcode-fullscreen-url').textContent = $('#lobby-join-url').textContent;
+  qrOverlay.classList.remove('hidden');
+});
+
+qrCloseBtn.addEventListener('click', () => qrOverlay.classList.add('hidden'));
+
+qrOverlay.addEventListener('click', (e) => {
+  if (e.target === qrOverlay) {
+    qrOverlay.classList.add('hidden');
+  }
+});
+
 // Init
 initAudio();
 if (localStorage.getItem('hostToken')) {
