@@ -130,6 +130,34 @@ The `allAnswered` check in `QuestionEngine` uses `session.getConnectedCount()` (
 | Old `disconnect` arrives before new `rejoin`        | Player marked disconnected. `addPlayer` finds existing (still in array), resets connected=true                                   |
 | Socket reconnects but session expired               | `player:join-error` → clears sessionStorage, shows join form                                                                     |
 
+### Question layout phases
+
+The question screen uses a two-phase layout toggled via the `reveal-layout` class:
+
+| Phase                                               | `reveal-layout` class  | Behavior                                                                                           |
+| --------------------------------------------------- | ---------------------- | -------------------------------------------------------------------------------------------------- |
+| **Read delay** (question text only, options hidden) | Removed                | `.qs-center` / `.hqv-content` uses `justify-content: center` — question text centered              |
+| **Answering** (options visible after read delay)    | Added                  | `justify-content: flex-start` + `margin-top: auto` on options — question at top, options at bottom |
+| **Answer reveal**                                   | Added (already active) | Same as answering — question at top, options at bottom                                             |
+
+**Player DOM structure:**
+
+```
+.qs-center              → flex: 1; justify-content: center (default)
+  .question-main        → flex-shrink: 0
+  #options-container    → margin-top: auto (only when .qs-center.reveal-layout)
+```
+
+**Host DOM structure:**
+
+```
+.hqv-content              → flex: 1; justify-content: center (default)
+  .hqv-question-card      → flex-shrink: 0
+  #host-options           → margin-top: auto (only when .hqv-content.reveal-layout)
+```
+
+The `reveal-layout` class is toggled in `renderQuestion`/`renderHostQuestion` (removed for read mode) and added back when read delay expires or on `server:answer-reveal`.
+
 ### Loading states
 
 All async operations disable their trigger button and show a `LOADING...` / `IMPORTING...` / `SAVING...` text. Use the `setLoading(btnId, loading, text, normalText)` helper.
