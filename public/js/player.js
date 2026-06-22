@@ -607,6 +607,7 @@ const params = new URLSearchParams(window.location.search);
 const pinParam = params.get('pin');
 if (pinParam) {
   $('#pin-input').value = pinParam;
+  $('#pin-input').disabled = true;
   $('#nickname-input').focus();
 }
 

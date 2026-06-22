@@ -85,6 +85,13 @@
   outline-offset: 2px;
 }
 
+.cyber-input:disabled {
+  border-color: #0a2a3a;
+  color: var(--text-dim);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 .cyber-input::placeholder {
   color: #005566;
 }
