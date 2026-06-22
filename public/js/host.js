@@ -20,6 +20,33 @@ let autoAdvanceCountdownInterval = null;
 let currentQuizAutoAdvance = { enabled: false, delay: 5 };
 let hostTimerInterval = null;
 let currentHostPlayers = [];
+let lobbyPlayers = [];
+let joinUrl = '';
+
+async function copyToClipboard(text) {
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(text);
+      return;
+    }
+  } catch {
+    // clipboard API failed, fall through
+  }
+  const textarea = document.createElement('textarea');
+  textarea.value = text;
+  textarea.style.position = 'fixed';
+  textarea.style.opacity = '0';
+  textarea.style.pointerEvents = 'none';
+  document.body.appendChild(textarea);
+  textarea.select();
+  try {
+    document.execCommand('copy');
+  } catch {
+    throw new Error('Copy failed');
+  } finally {
+    document.body.removeChild(textarea);
+  }
+}
 
 function switchTo(screenName) {
   Object.values(screens).forEach((s) => s.classList.add('hidden'));
@@ -147,7 +174,11 @@ async function deleteQuiz(quizId, button) {
     await api(`/api/quizzes/${quizId}`, { method: 'DELETE' });
     await loadDashboard();
   } catch (err) {
-    alert(`Failed to delete quiz: ${err.message}`);
+    showNotification({
+      title: 'DELETE FAILED',
+      message: err.message,
+      color: '#ff4444',
+    });
   } finally {
     button.disabled = false;
   }
@@ -198,7 +229,11 @@ function openQuizSettings(quizId) {
       $('#quiz-settings-modal').classList.add('active');
     })
     .catch((err) => {
-      alert(`Failed to load quiz settings: ${err.message}`);
+      showNotification({
+        title: 'SETTINGS ERROR',
+        message: `Failed to load quiz settings: ${err.message}`,
+        color: '#ff4444',
+      });
     });
 }
 
@@ -437,7 +472,11 @@ async function openSessionDetail(sessionId) {
     $('#results-detail-view').classList.remove('hidden');
     $('#results-back-btn').classList.remove('hidden');
   } catch (err) {
-    alert(`Failed to load session details: ${err.message}`);
+    showNotification({
+      title: 'SESSION ERROR',
+      message: `Failed to load session details: ${err.message}`,
+      color: '#ff4444',
+    });
   }
 }
 
@@ -541,6 +580,7 @@ function formatSelectedOptions(selectedOptions) {
 }
 
 function renderLobby(players) {
+  lobbyPlayers = players;
   $('#player-count').textContent = players.length;
   const list = $('#lobby-player-list');
   if (players.length === 0) {
@@ -870,6 +910,9 @@ $('#login-btn').addEventListener('click', login);
 $('#logout-btn').addEventListener('click', logout);
 $('#import-btn').addEventListener('click', importQuiz);
 $('#start-game-btn').addEventListener('click', () => {
+  if (lobbyPlayers.length === 0 && !confirm('No players have joined yet. Start game anyway?')) {
+    return;
+  }
   socket.emit('host:start-game');
 });
 $('#next-question-btn').addEventListener('click', emitNextQuestion);
@@ -891,6 +934,43 @@ $('#quiz-results-modal').addEventListener('click', (e) => {
   }
 });
 
+$('#copy-pin-btn').addEventListener('click', async () => {
+  if (!currentPin) return;
+  try {
+    await copyToClipboard(currentPin);
+    showNotification({
+      title: 'COPIED',
+      message: 'PIN copied to clipboard!',
+      color: '#00ff9d',
+    });
+  } catch {
+    showNotification({
+      title: 'COPY FAILED',
+      message: 'Could not copy PIN. Try selecting it manually.',
+      color: '#ff4444',
+    });
+  }
+});
+
+$('#copy-url-btn').addEventListener('click', async () => {
+  if (!currentPin) return;
+  const url = `${window.location.origin}/play?pin=${currentPin}`;
+  try {
+    await copyToClipboard(url);
+    showNotification({
+      title: 'COPIED',
+      message: 'Join URL copied to clipboard!',
+      color: '#00ff9d',
+    });
+  } catch {
+    showNotification({
+      title: 'COPY FAILED',
+      message: 'Could not copy URL. Try selecting it manually.',
+      color: '#ff4444',
+    });
+  }
+});
+
 // Socket events
 socket.on('host:session-created', ({ pin, quizTitle, hostname, autoAdvance }) => {
   currentPin = pin;
@@ -903,7 +983,7 @@ socket.on('host:session-created', ({ pin, quizTitle, hostname, autoAdvance }) =>
 
   const port = window.location.port ? `:${window.location.port}` : '';
   const protocol = window.location.protocol;
-  const joinUrl = `${protocol}//${hostname}${port}/play?pin=${pin}`;
+  joinUrl = `${protocol}//${hostname}${port}/play?pin=${pin}`;
   $('#lobby-qr-code').src = `/api/qrcode?url=${encodeURIComponent(joinUrl)}`;
   $('#lobby-qr-code').alt = `QR Code for ${joinUrl}`;
   const urlDisplay = joinUrl.replace(/^https?:\/\//, '');
@@ -992,7 +1072,11 @@ socket.on('server:game-over', ({ podium, leaderboard }) => {
 });
 
 socket.on('server:error', ({ message }) => {
-  alert(`Error: ${message}`);
+  showNotification({
+    title: 'SERVER ERROR',
+    message,
+    color: '#ff4444',
+  });
 });
 
 // Init

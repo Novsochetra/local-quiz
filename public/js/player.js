@@ -1,7 +1,7 @@
 import { $, showScreen, escapeHtml, formatNumber } from './utils.js';
 import { getSocket } from './socket.js';
 import { initAudio, playSound } from './audio.js';
-import { showJoinNotification } from './notifications.js';
+import { showNotification, showJoinNotification } from './notifications.js';
 
 const socket = getSocket();
 
@@ -494,8 +494,12 @@ socket.on('player:join-error', ({ message }) => {
 });
 
 socket.on('player:kicked', () => {
-  alert('You have been removed from the game.');
-  location.reload();
+  showNotification({
+    title: 'KICKED',
+    message: 'You have been removed from the game.',
+    color: '#ff4444',
+  });
+  setTimeout(() => location.reload(), 2000);
 });
 
 socket.on('server:game-started', () => {
@@ -541,7 +545,11 @@ socket.on('server:game-over', ({ podium, leaderboard }) => {
 });
 
 socket.on('server:error', ({ message }) => {
-  alert(`Error: ${message}`);
+  showNotification({
+    title: 'ERROR',
+    message,
+    color: '#ff4444',
+  });
 });
 
 socket.on('player:reconnect-state', (state) => {
@@ -586,8 +594,12 @@ socket.on('player:reconnect-state', (state) => {
 socket.on('server:host-disconnected', ({ message }) => {
   sessionStorage.removeItem('quizPin');
   sessionStorage.removeItem('quizNickname');
-  alert(message);
-  location.reload();
+  showNotification({
+    title: 'HOST DISCONNECTED',
+    message,
+    color: '#ff4444',
+  });
+  setTimeout(() => location.reload(), 2000);
 });
 
 // Pre-fill PIN from URL query param

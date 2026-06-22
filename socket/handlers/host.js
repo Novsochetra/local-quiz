@@ -92,6 +92,10 @@ export function registerHostHandlers(socket, io) {
 
       if (session.engine.phase !== 'idle') return;
 
+      if (session.getConnectedCount() === 0) {
+        return socket.emit('server:error', { message: 'No players connected' });
+      }
+
       io.to(pin).emit('server:game-started');
       session.startGame();
     } catch (err) {
