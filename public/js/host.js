@@ -704,14 +704,11 @@ function renderHostAnswerStatus({ answeredCount, totalPlayers, players }) {
   statusEl.innerHTML = players
     .map((p) => {
       const dotClass = p.connected ? 'connected' : 'disconnected';
-      const nameClass = !p.connected
-        ? 'host-player-status-name disconnected'
-        : 'host-player-status-name';
       const label = p.connected ? p.nickname : `${p.nickname} (DC)`;
       return `
       <div class="host-player-status-item ${!p.connected ? 'disconnected' : ''}">
         <span class="host-player-status-dot ${dotClass}"></span>
-        <span class="${nameClass}">${label}</span>
+        <span class="host-player-status-name">${label}</span>
       </div>
     `;
     })
