@@ -144,6 +144,7 @@ function renderQuestion(question, options) {
   currentQuestion = question;
   lastAnswerResult = null;
   switchTo('question');
+  $('.qs-center').classList.remove('reveal-layout');
 
   $('#question-counter').textContent = `${question.index + 1} / ${question.totalQuestions}`;
   $('#question-points').textContent = `${question.points} pts`;
@@ -202,14 +203,18 @@ function renderQuestion(question, options) {
     if (hasAnswered || readDelay <= 0) {
       questionTextEl.classList.remove('read-mode-text');
       container.classList.remove('options-hidden');
+      $('.qs-center').classList.add('reveal-layout');
     } else {
       questionTextEl.classList.add('read-mode-text');
       container.classList.add('options-hidden');
       setTimeout(() => {
         questionTextEl.classList.remove('read-mode-text');
         container.classList.remove('options-hidden');
+        $('.qs-center').classList.add('reveal-layout');
       }, readDelay * 1000);
     }
+  } else {
+    $('.qs-center').classList.add('reveal-layout');
   }
 
   if (hasAnswered) {
@@ -539,6 +544,7 @@ socket.on('player:answer-result', (result) => {
 });
 
 socket.on('server:answer-reveal', ({ correctOptionIds }) => {
+  $('.qs-center').classList.add('reveal-layout');
   const buttons = $('#options-container').querySelectorAll('.option-btn');
   buttons.forEach((btn) => {
     btn.disabled = true;

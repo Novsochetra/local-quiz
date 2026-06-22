@@ -111,32 +111,38 @@
             0
           </div>
 
-          <div class="question-main">
-            <div id="question-content" class="cyber-card" style="margin-bottom: 1rem">
-              <h2 id="question-text" style="font-size: 1.3rem; text-align: center; margin: 0"></h2>
-              <img
-                id="question-image"
+          <div class="qs-center">
+            <div class="question-main">
+              <div id="question-content" class="cyber-card" style="margin-bottom: 1rem">
+                <h2
+                  id="question-text"
+                  style="font-size: 1.3rem; text-align: center; margin: 0"
+                ></h2>
+                <img
+                  id="question-image"
+                  class="hidden"
+                  style="max-width: 100%; margin-top: 1rem; border: 1px solid var(--border)"
+                  alt="Question media"
+                />
+              </div>
+
+              <p
+                id="options-only-hint"
                 class="hidden"
-                style="max-width: 100%; margin-top: 1rem; border: 1px solid var(--border)"
-                alt="Question media"
-              />
+                style="
+                  color: var(--yellow);
+                  text-align: center;
+                  text-shadow: 0 0 8px var(--yellow);
+                  margin-bottom: 1rem;
+                "
+              >
+                ► Look at the host screen for the question
+              </p>
             </div>
 
-            <p
-              id="options-only-hint"
-              class="hidden"
-              style="
-                color: var(--yellow);
-                text-align: center;
-                text-shadow: 0 0 8px var(--yellow);
-                margin-bottom: 1rem;
-              "
-            >
-              ► Look at the host screen for the question
-            </p>
+            <div id="options-container" class="options-grid"></div>
           </div>
 
-          <div id="options-container" class="options-grid"></div>
           <div
             id="answer-feedback"
             class="hidden"

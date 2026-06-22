@@ -769,6 +769,7 @@ function renderHostQuestion(question) {
   currentQuestion = question;
   showScreen(screens.game, 'host-question-view');
   $('#host-player-sidebar').classList.remove('hidden');
+  $('.hqv-content').classList.remove('reveal-layout');
   $('#host-question-number').textContent =
     `Question ${question.index + 1} / ${question.totalQuestions}`;
   $('#host-question-text').textContent = question.text;
@@ -794,7 +795,10 @@ function renderHostQuestion(question) {
     setTimeout(() => {
       qtext.classList.remove('read-mode-text');
       container.classList.remove('options-hidden');
+      $('.hqv-content').classList.add('reveal-layout');
     }, readDelay * 1000);
+  } else {
+    $('.hqv-content').classList.add('reveal-layout');
   }
 }
 
@@ -1051,6 +1055,7 @@ socket.on('server:answer-reveal', ({ correctOptionIds }) => {
   clearInterval(hostTimerInterval);
   hostTimerInterval = null;
   $('#host-timer-fill').style.width = '0%';
+  $('.hqv-content').classList.add('reveal-layout');
 
   $('#host-options')
     .querySelectorAll('.option-btn')
