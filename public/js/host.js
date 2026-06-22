@@ -18,6 +18,7 @@ let currentQuestion = null;
 let autoAdvanceTimer = null;
 let autoAdvanceCountdownInterval = null;
 let currentQuizAutoAdvance = { enabled: false, delay: 5 };
+let currentQuizReadDelay = 3;
 let hostTimerInterval = null;
 let currentHostPlayers = [];
 let lobbyPlayers = [];
@@ -249,6 +250,7 @@ function renderQuizSettings(quiz) {
   $('#settings-auto-advance-toggle').checked = !!quiz.auto_advance_enabled;
   $('#settings-auto-advance-seconds').value = quiz.auto_advance_delay ?? 5;
   $('#settings-countdown-seconds').value = quiz.countdown_seconds ?? 5;
+  $('#settings-read-delay').value = quiz.question_read_delay ?? 3;
   $('#settings-player-layout').value = ['default', 'options_only'].includes(quiz.player_layout)
     ? quiz.player_layout
     : 'default';
@@ -308,6 +310,7 @@ async function saveQuizSettings() {
   };
   const countdownSeconds = getSettingsCountdownSeconds();
   const playerLayout = $('#settings-player-layout').value;
+  const questionReadDelay = getSettingsReadDelay();
 
   if (!title) {
     showError('#quiz-settings-error', 'Quiz title is required');
@@ -355,6 +358,7 @@ async function saveQuizSettings() {
         title,
         description,
         autoAdvance,
+        questionReadDelay,
         countdownSeconds,
         playerLayout,
         questions,
@@ -613,6 +617,12 @@ function getSettingsAutoAdvanceDelay() {
   return Math.min(15, Math.max(3, Number.isNaN(value) ? 5 : value));
 }
 
+function getSettingsReadDelay() {
+  const input = $('#settings-read-delay');
+  const value = parseInt(input.value, 10);
+  return Math.min(10, Math.max(0, Number.isNaN(value) ? 3 : value));
+}
+
 function getSettingsCountdownSeconds() {
   const input = $('#settings-countdown-seconds');
   const value = parseInt(input.value, 10);
@@ -775,6 +785,17 @@ function renderHostQuestion(question) {
     .join('');
 
   startHostTimer(question.timeLimit);
+
+  const qtext = $('#host-question-text');
+  const readDelay = currentQuizReadDelay;
+  if (readDelay > 0) {
+    qtext.classList.add('read-mode-text');
+    container.classList.add('options-hidden');
+    setTimeout(() => {
+      qtext.classList.remove('read-mode-text');
+      container.classList.remove('options-hidden');
+    }, readDelay * 1000);
+  }
 }
 
 let hostSplashCountdownInterval = null;
@@ -972,12 +993,13 @@ $('#copy-url-btn').addEventListener('click', async () => {
 });
 
 // Socket events
-socket.on('host:session-created', ({ pin, quizTitle, hostname, autoAdvance }) => {
+socket.on('host:session-created', ({ pin, quizTitle, hostname, autoAdvance, readDelay }) => {
   currentPin = pin;
   currentQuizAutoAdvance = {
     enabled: autoAdvance?.enabled ?? false,
     delay: autoAdvance?.delay ?? 5,
   };
+  currentQuizReadDelay = readDelay ?? 3;
   $('#lobby-pin').textContent = pin;
   $('#lobby-quiz-title').textContent = quizTitle;
 

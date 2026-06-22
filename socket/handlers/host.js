@@ -42,6 +42,7 @@ export function registerHostHandlers(socket, io) {
           enabled: !!quiz.auto_advance_enabled,
           delay: quiz.auto_advance_delay ?? 5,
         },
+        readDelay: quiz.question_read_delay ?? 3,
       });
 
       io.to(session.pin).emit('server:lobby-update', {

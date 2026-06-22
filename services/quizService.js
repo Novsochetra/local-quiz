@@ -50,17 +50,26 @@ export function deleteQuiz(id) {
 
 export function updateQuiz(
   id,
-  { title, description, autoAdvanceEnabled, autoAdvanceDelay, countdownSeconds, playerLayout }
+  {
+    title,
+    description,
+    autoAdvanceEnabled,
+    autoAdvanceDelay,
+    questionReadDelay,
+    countdownSeconds,
+    playerLayout,
+  }
 ) {
   const enabled = autoAdvanceEnabled ? 1 : 0;
   const delay = Math.min(15, Math.max(3, autoAdvanceDelay ?? 5));
+  const readDelay = Math.min(10, Math.max(0, questionReadDelay ?? 3));
   const countdown = Math.min(15, Math.max(1, countdownSeconds ?? 5));
   const layout = ['default', 'options_only'].includes(playerLayout) ? playerLayout : 'default';
   const result = db
     .prepare(
-      'UPDATE quizzes SET title = ?, description = ?, auto_advance_enabled = ?, auto_advance_delay = ?, countdown_seconds = ?, player_layout = ? WHERE id = ?'
+      'UPDATE quizzes SET title = ?, description = ?, auto_advance_enabled = ?, auto_advance_delay = ?, question_read_delay = ?, countdown_seconds = ?, player_layout = ? WHERE id = ?'
     )
-    .run(title, description || null, enabled, delay, countdown, layout, id);
+    .run(title, description || null, enabled, delay, readDelay, countdown, layout, id);
   return result.changes > 0;
 }
 

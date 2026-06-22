@@ -811,6 +811,45 @@
 #host-options {
   margin-top: auto;
   margin-bottom: 0;
+  transition: opacity 0.4s ease;
+}
+
+#options-container {
+  transition: opacity 0.4s ease;
+}
+
+#host-options.options-hidden,
+#options-container.options-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.read-mode-text {
+  font-size: 2.2rem;
+  color: var(--text);
+  text-transform: none;
+}
+
+#question-text,
+#host-question-text {
+  transition:
+    font-size 0.35s ease,
+    color 0.35s ease;
+}
+
+#question-text.read-mode-text,
+#host-question-text.read-mode-text {
+  font-size: 2.2rem;
+  color: var(--text);
+  text-transform: none;
+  animation: readModeZoomIn 0.35s ease-out;
+}
+
+#question-text.read-mode-text::before,
+#question-text.read-mode-text::after,
+#host-question-text.read-mode-text::before,
+#host-question-text.read-mode-text::after {
+  display: none;
 }
 
 /* Sidebar */

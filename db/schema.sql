@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS quizzes (
   code TEXT UNIQUE,
   auto_advance_enabled INTEGER NOT NULL DEFAULT 0,
   auto_advance_delay INTEGER NOT NULL DEFAULT 5,
+  question_read_delay INTEGER NOT NULL DEFAULT 3,
   countdown_seconds INTEGER NOT NULL DEFAULT 5,
   player_layout TEXT NOT NULL DEFAULT 'default' CHECK(player_layout IN ('default', 'options_only')),
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,

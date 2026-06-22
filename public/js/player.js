@@ -195,6 +195,23 @@ function renderQuestion(question, options) {
   $('#answer-feedback').classList.add('hidden');
   startTimer(question.timeLimit, elapsedSec);
 
+  const questionTextEl = $('#question-text');
+  const readDelay = question.readDelay ?? 3;
+
+  if (!isOptionsOnly) {
+    if (hasAnswered || readDelay <= 0) {
+      questionTextEl.classList.remove('read-mode-text');
+      container.classList.remove('options-hidden');
+    } else {
+      questionTextEl.classList.add('read-mode-text');
+      container.classList.add('options-hidden');
+      setTimeout(() => {
+        questionTextEl.classList.remove('read-mode-text');
+        container.classList.remove('options-hidden');
+      }, readDelay * 1000);
+    }
+  }
+
   if (hasAnswered) {
     const buttons = container.querySelectorAll('.option-btn');
     buttons.forEach((btn) => {

@@ -56,6 +56,7 @@ export class QuestionEngine {
       timeLimit: question.time_limit_sec,
       points: question.points,
       playerLayout: this.session.quiz.player_layout || 'default',
+      readDelay: this.session.quiz.question_read_delay ?? 3,
       options: question.options.map((opt) => ({
         id: opt.id,
         text: opt.text,
@@ -190,6 +191,7 @@ export class QuestionEngine {
       timeLimit: q.time_limit_sec,
       points: q.points,
       playerLayout: this.session.quiz.player_layout || 'default',
+      readDelay: this.session.quiz.question_read_delay ?? 3,
       options: q.options.map((o) => ({ id: o.id, text: o.text })),
     });
 
