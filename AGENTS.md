@@ -83,7 +83,7 @@ const socket = window.io();
 - Full score within the first 5 seconds of the question timer.
 - Linear decay after the 5-second window, reaching 0 at time expiry.
 - Wrong or incomplete answers earn 0 points.
-- Multiple-select is **all-or-nothing**.
+- `multiple_choice` (multi-select) is **all-or-nothing**.
 
 ### Game flow
 
