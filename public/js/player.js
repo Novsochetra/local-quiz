@@ -446,6 +446,14 @@ socket.on('server:error', ({ message }) => {
   alert(`Error: ${message}`);
 });
 
+// Pre-fill PIN from URL query param
+const params = new URLSearchParams(window.location.search);
+const pinParam = params.get('pin');
+if (pinParam) {
+  $('#pin-input').value = pinParam;
+  $('#nickname-input').focus();
+}
+
 // Init
 initAudio();
 switchTo('join');

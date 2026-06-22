@@ -76,10 +76,23 @@
             <p class="cyber-subtitle">Share this PIN with players</p>
           </header>
 
-          <div id="lobby-pin" class="pin-display" style="max-width: 420px; margin: 0 auto 1rem">
-            ------
-          </div>
           <p id="lobby-quiz-title" style="color: var(--text-dim); margin-bottom: 2rem"></p>
+
+          <div class="lobby-pin-row">
+            <div class="cyber-card qrcode-card">
+              <div class="qrcode-label">SCAN TO JOIN</div>
+              <div class="qrcode-container">
+                <img id="lobby-qr-code" class="qrcode-image" alt="QR Code" />
+              </div>
+              <p id="lobby-join-url" class="qrcode-url"></p>
+            </div>
+
+            <div class="cyber-card pin-card">
+              <div class="qrcode-label">GAME PIN</div>
+              <div id="lobby-pin" class="pin-display">------</div>
+              <p id="lobby-join-url-alt" class="qrcode-url"></p>
+            </div>
+          </div>
 
           <div class="cyber-card" style="text-align: left">
             <div

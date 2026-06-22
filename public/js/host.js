@@ -807,7 +807,7 @@ $('#quiz-results-modal').addEventListener('click', (e) => {
 });
 
 // Socket events
-socket.on('host:session-created', ({ pin, quizTitle, autoAdvance }) => {
+socket.on('host:session-created', ({ pin, quizTitle, hostname, autoAdvance }) => {
   currentPin = pin;
   currentQuizAutoAdvance = {
     enabled: autoAdvance?.enabled ?? false,
@@ -815,6 +815,16 @@ socket.on('host:session-created', ({ pin, quizTitle, autoAdvance }) => {
   };
   $('#lobby-pin').textContent = pin;
   $('#lobby-quiz-title').textContent = quizTitle;
+
+  const port = window.location.port ? `:${window.location.port}` : '';
+  const protocol = window.location.protocol;
+  const joinUrl = `${protocol}//${hostname}${port}/play?pin=${pin}`;
+  $('#lobby-qr-code').src = `/api/qrcode?url=${encodeURIComponent(joinUrl)}`;
+  $('#lobby-qr-code').alt = `QR Code for ${joinUrl}`;
+  const urlDisplay = joinUrl.replace(/^https?:\/\//, '');
+  $('#lobby-join-url').textContent = urlDisplay;
+  $('#lobby-join-url-alt').textContent = urlDisplay;
+
   renderLobby([]);
   switchTo('lobby');
 });

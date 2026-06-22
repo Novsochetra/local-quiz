@@ -1,5 +1,18 @@
 import { GameSession } from '../game/GameSession.js';
 import { getQuizById } from '../../services/quizService.js';
+import os from 'os';
+
+function getLocalIp() {
+  const interfaces = os.networkInterfaces();
+  for (const name of Object.keys(interfaces)) {
+    for (const iface of interfaces[name]) {
+      if (iface.family === 'IPv4' && !iface.internal) {
+        return iface.address;
+      }
+    }
+  }
+  return 'localhost';
+}
 
 export function registerHostHandlers(socket, io) {
   socket.on('host:create-session', async ({ quizId }) => {
@@ -19,6 +32,7 @@ export function registerHostHandlers(socket, io) {
         sessionId: session.id,
         pin: session.pin,
         quizTitle: quiz.title,
+        hostname: getLocalIp(),
         autoAdvance: {
           enabled: !!quiz.auto_advance_enabled,
           delay: quiz.auto_advance_delay ?? 5,

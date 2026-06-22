@@ -923,6 +923,79 @@
   text-align: right;
 }
 
+.lobby-pin-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  align-items: stretch;
+}
+
+.qrcode-card {
+  text-align: center;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.pin-card {
+  text-align: center;
+  flex: 2;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.pin-card .pin-display {
+  font-size: 4rem;
+  margin: 1rem 0;
+}
+
+.qrcode-label {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  margin-bottom: 0.75rem;
+}
+
+.qrcode-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0.75rem;
+}
+
+.qrcode-image {
+  width: 140px;
+  height: 140px;
+  border: 1px solid var(--border);
+  padding: 6px;
+  background: #0a0a1a;
+}
+
+.qrcode-url {
+  color: var(--text-dim);
+  font-size: 0.65rem;
+  word-break: break-all;
+  font-family: 'Courier New', Courier, monospace;
+  margin: 0;
+  line-height: 1.4;
+}
+
+@media (max-width: 700px) {
+  .lobby-pin-row {
+    flex-direction: column;
+  }
+
+  .pin-card .pin-display {
+    font-size: 3rem;
+  }
+}
+
 @media (max-width: 600px) {
   .options-grid {
     grid-template-columns: 1fr;
