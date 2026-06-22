@@ -114,63 +114,90 @@
 
       <section id="game-screen" class="screen">
         <div class="container container-wide" style="padding-top: 2rem">
-          <div id="host-splash-view" class="hidden">
-            <header class="header">
-              <h1 class="cyber-title" data-text="GET READY">GET READY</h1>
-              <p id="host-splash-question-progress" class="cyber-subtitle"></p>
-            </header>
-            <div id="host-splash-countdown" class="splash-countdown">5</div>
-            <p style="color: var(--text-dim); text-align: center; margin-top: 1rem">
-              Next question incoming...
-            </p>
+          <div id="host-splash-view" class="host-view hidden">
+            <div class="terminal-window">
+              <div class="terminal-title-bar">
+                <span class="terminal-title-text">QUIZ_MODULE.exe</span>
+                <span class="terminal-title-controls">
+                  <span class="term-ctrl">_</span>
+                  <span class="term-ctrl">□</span>
+                  <span class="term-ctrl term-close">×</span>
+                </span>
+              </div>
+              <div class="terminal-body">
+                <div class="term-line" id="host-splash-line-0">
+                  <span class="term-prompt">&gt;</span>
+                  <span
+                    >LOADING QUESTION
+                    <span id="host-splash-question-num" class="term-highlight"></span> OF
+                    <span id="host-splash-question-total" class="term-highlight"></span
+                  ></span>
+                </div>
+                <div class="term-line term-success" id="host-splash-line-1">
+                  <span class="term-prompt">&gt;</span>
+                  <span>ESTABLISHING CONNECTION...</span>
+                  <span class="term-status">[OK]</span>
+                </div>
+                <div class="term-line term-success" id="host-splash-line-2">
+                  <span class="term-prompt">&gt;</span>
+                  <span>SYNCHRONIZING PLAYERS...</span>
+                  <span class="term-status">[OK]</span>
+                </div>
+                <div class="term-line term-success" id="host-splash-line-3">
+                  <span class="term-prompt">&gt;</span>
+                  <span>INITIALIZING ROUND...</span>
+                  <span class="term-status">[OK]</span>
+                </div>
+                <div class="term-line" id="host-splash-line-4">
+                  <span class="term-prompt">&gt;</span>
+                  <span>ARMING CIRCUITS...</span>
+                  <span class="term-cursor">█</span>
+                </div>
+
+                <div class="term-progress-row" id="host-splash-progress-row">
+                  <span class="term-bracket">[</span>
+                  <span class="term-bar-track">
+                    <span class="term-bar-fill" id="host-splash-bar-fill" style="width: 0%"></span>
+                  </span>
+                  <span class="term-bracket">]</span>
+                  <span class="term-pct" id="host-splash-bar-pct">0%</span>
+                </div>
+
+                <div class="term-line" id="host-splash-line-tminus">
+                  <span class="term-prompt">&gt;</span>
+                  <span>T-MINUS: </span>
+                  <span id="host-splash-countdown" class="term-countdown">5</span>
+                </div>
+
+                <div class="term-line term-ready hidden" id="host-splash-line-ready">
+                  <span class="term-prompt">&gt;</span>
+                  <span>SYSTEMS OPERATIONAL. ENTERING QUESTION...</span>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div id="host-question-view" class="hidden">
-            <div
-              style="
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 1rem;
-              "
-            >
-              <h3 id="host-question-number" style="margin: 0; color: var(--text-dim)"></h3>
+          <div id="host-question-view" class="host-view hidden">
+            <div class="hqv-top">
+              <h3 id="host-question-number" class="hqv-qnum"></h3>
               <div id="host-answer-count" class="host-answer-count">0 / 0 answered</div>
             </div>
 
-            <div class="timer-bar" style="margin-bottom: 1rem">
+            <div class="timer-bar">
               <div id="host-timer-fill" class="timer-bar-fill" style="width: 100%"></div>
             </div>
 
-            <div
-              style="
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 1rem;
-              "
-            >
-              <div></div>
-              <div id="host-timer" class="countdown-number" style="font-size: 3.5rem">0</div>
-            </div>
+            <div id="host-timer" class="hqv-timer">0</div>
 
-            <div class="cyber-card" style="margin-bottom: 1rem">
-              <h2
-                id="host-question-text"
-                style="font-size: 1.4rem; text-align: center; margin: 0"
-              ></h2>
-            </div>
-            <div id="host-options" class="options-grid"></div>
-
-            <div class="cyber-card" style="margin-top: 1.5rem">
-              <h3 style="margin: 0 0 1rem; color: var(--text-dim); font-size: 0.85rem">
-                PLAYER STATUS
-              </h3>
-              <div id="host-player-status" class="host-player-status"></div>
+            <div class="hqv-content">
+              <div class="cyber-card hqv-question-card">
+                <h2 id="host-question-text" class="hqv-qtext"></h2>
+              </div>
+              <div id="host-options" class="options-grid"></div>
             </div>
           </div>
 
-          <div id="host-leaderboard-view" class="hidden">
+          <div id="host-leaderboard-view" class="host-view hidden">
             <header class="header">
               <h1 class="cyber-title" data-text="LEADERBOARD">LEADERBOARD</h1>
             </header>
@@ -184,7 +211,7 @@
             </div>
           </div>
 
-          <div id="host-results-view" class="hidden">
+          <div id="host-results-view" class="host-view hidden">
             <header class="header">
               <h1 class="cyber-title" data-text="FINAL RESULTS">FINAL RESULTS</h1>
             </header>
@@ -194,6 +221,11 @@
               <a href="/host" class="cyber-btn large">BACK TO DASHBOARD</a>
             </div>
           </div>
+        </div>
+
+        <div id="host-player-sidebar" class="host-view hidden">
+          <h3 class="hps-heading">PLAYER STATUS</h3>
+          <div id="host-player-status" class="host-player-status"></div>
         </div>
       </section>
     </div>

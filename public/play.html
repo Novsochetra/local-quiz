@@ -147,14 +147,65 @@
 
       <section id="splash-screen" class="screen centered">
         <div class="container">
-          <header class="header">
-            <h1 class="cyber-title" data-text="GET READY">GET READY</h1>
-            <p id="splash-question-progress" class="cyber-subtitle"></p>
-          </header>
-          <div id="splash-countdown" class="splash-countdown">5</div>
-          <p style="color: var(--text-dim); text-align: center; margin-top: 1rem">
-            Next question incoming...
-          </p>
+          <div class="terminal-window">
+            <div class="terminal-title-bar">
+              <span class="terminal-title-text">QUIZ_MODULE.exe</span>
+              <span class="terminal-title-controls">
+                <span class="term-ctrl">_</span>
+                <span class="term-ctrl">□</span>
+                <span class="term-ctrl term-close">×</span>
+              </span>
+            </div>
+            <div class="terminal-body">
+              <div class="term-line" id="splash-line-0">
+                <span class="term-prompt">&gt;</span>
+                <span
+                  >LOADING QUESTION <span id="splash-question-num" class="term-highlight"></span> OF
+                  <span id="splash-question-total" class="term-highlight"></span
+                ></span>
+              </div>
+              <div class="term-line term-success" id="splash-line-1">
+                <span class="term-prompt">&gt;</span>
+                <span>ESTABLISHING CONNECTION...</span>
+                <span class="term-status">[OK]</span>
+              </div>
+              <div class="term-line term-success" id="splash-line-2">
+                <span class="term-prompt">&gt;</span>
+                <span>SYNCHRONIZING PLAYERS...</span>
+                <span class="term-status">[OK]</span>
+              </div>
+              <div class="term-line term-success" id="splash-line-3">
+                <span class="term-prompt">&gt;</span>
+                <span>INITIALIZING ROUND...</span>
+                <span class="term-status">[OK]</span>
+              </div>
+              <div class="term-line" id="splash-line-4">
+                <span class="term-prompt">&gt;</span>
+                <span>ARMING CIRCUITS...</span>
+                <span class="term-cursor">█</span>
+              </div>
+
+              <div class="term-progress-row" id="splash-progress-row">
+                <span class="term-bracket">[</span>
+                <span class="term-bar-track">
+                  <span class="term-bar-fill" id="splash-bar-fill" style="width: 0%"></span>
+                </span>
+                <span class="term-bracket">]</span>
+                <span class="term-pct" id="splash-bar-pct">0%</span>
+              </div>
+
+              <div class="term-line" id="splash-line-tminus">
+                <span class="term-prompt">&gt;</span>
+                <span>T-MINUS: </span>
+                <span id="splash-countdown" class="term-countdown">5</span>
+              </div>
+
+              <div class="term-line term-ready hidden" id="splash-line-ready">
+                <span class="term-prompt">&gt;</span>
+                <span>SYSTEMS OPERATIONAL. ENTERING QUESTION...</span>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 

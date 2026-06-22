@@ -17,7 +17,7 @@ export function formatNumber(num) {
 }
 
 export function showScreen(container, screenId) {
-  container.querySelectorAll('.screen').forEach((screen) => {
+  container.querySelectorAll('.screen, .host-view').forEach((screen) => {
     screen.classList.add('hidden');
   });
   const target = container.querySelector(`#${screenId}`);

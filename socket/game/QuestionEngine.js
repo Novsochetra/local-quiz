@@ -193,6 +193,15 @@ export class QuestionEngine {
 
     switch (this.phase) {
       case 'idle':
+        if (this.session.status === 'waiting') {
+          return { screen: 'waiting' };
+        }
+        return {
+          screen: 'splash',
+          currentQuestionIndex: this.currentQuestionIndex,
+          totalQuestions,
+        };
+
       case 'countdown':
         return {
           screen: 'splash',

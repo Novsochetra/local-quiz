@@ -344,27 +344,69 @@ function renderSplash({ seconds, currentQuestionIndex, totalQuestions }) {
   resetSplashCountdown();
   switchTo('splash');
 
-  $('#splash-question-progress').textContent =
-    typeof currentQuestionIndex === 'number' && typeof totalQuestions === 'number'
-      ? `QUESTION ${currentQuestionIndex + 1} / ${totalQuestions}`
-      : '';
+  $('#splash-question-num').textContent =
+    typeof currentQuestionIndex === 'number' ? currentQuestionIndex + 1 : '';
+  $('#splash-question-total').textContent =
+    typeof totalQuestions === 'number' ? totalQuestions : '';
 
-  const display = $('#splash-countdown');
+  const countdown = $('#splash-countdown');
+  const barFill = $('#splash-bar-fill');
+  const barPct = $('#splash-bar-pct');
+  const readyLine = $('#splash-line-ready');
+  const tminusLine = $('#splash-line-tminus');
+
   let remaining = Math.max(1, seconds);
-  display.textContent = remaining;
-  display.classList.remove('splash-go');
+  const total = remaining;
+
+  countdown.textContent = remaining;
+  barFill.style.width = '0%';
+  barPct.textContent = '0%';
+  readyLine.classList.add('hidden');
+  tminusLine.classList.remove('hidden');
+
+  animateTerminalLines('#splash-screen .terminal-body');
 
   splashCountdownInterval = setInterval(() => {
     remaining--;
+    const progress = ((total - remaining) / total) * 100;
+
     if (remaining <= 0) {
       clearInterval(splashCountdownInterval);
       splashCountdownInterval = null;
-      display.textContent = 'GO!';
-      display.classList.add('splash-go');
+      barFill.style.width = '100%';
+      barPct.textContent = '100%';
+      tminusLine.classList.add('hidden');
+      readyLine.classList.remove('hidden');
+      readyLine.classList.add('visible');
     } else {
-      display.textContent = remaining;
+      countdown.textContent = remaining;
+      const capped = Math.min(progress, 95);
+      barFill.style.width = `${capped}%`;
+      barPct.textContent = `${Math.round(capped)}%`;
     }
   }, 1000);
+}
+
+function animateTerminalLines(containerSelector) {
+  const container = document.querySelector(containerSelector);
+  if (!container) return;
+
+  const items = container.querySelectorAll('.term-line, .term-progress-row');
+
+  items.forEach((el) => {
+    el.classList.remove('visible');
+  });
+
+  void container.offsetHeight;
+
+  items.forEach((el, i) => {
+    setTimeout(
+      () => {
+        el.classList.add('visible');
+      },
+      i * 200 + 50
+    );
+  });
 }
 
 function renderGameOver(podium, leaderboard) {
