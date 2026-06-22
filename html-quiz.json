@@ -3,7 +3,7 @@
   "description": "Test your knowledge of HyperText Markup Language.",
   "questions": [
     {
-      "type": "multiple_choice",
+      "type": "single_choice",
       "text": "What does HTML stand for?",
       "timeLimit": 15,
       "points": 1000,
@@ -15,7 +15,7 @@
       ]
     },
     {
-      "type": "multiple_choice",
+      "type": "single_choice",
       "text": "Which element defines the main content area of an HTML document?",
       "timeLimit": 15,
       "points": 1000,
@@ -27,7 +27,7 @@
       ]
     },
     {
-      "type": "true_false",
+      "type": "single_choice",
       "text": "The <head> element is visible to users in the browser window.",
       "timeLimit": 10,
       "points": 1000,
@@ -37,7 +37,7 @@
       ]
     },
     {
-      "type": "multiple_choice",
+      "type": "single_choice",
       "text": "Which attribute is used to specify a unique identifier for an element?",
       "timeLimit": 15,
       "points": 1000,
@@ -49,7 +49,7 @@
       ]
     },
     {
-      "type": "multiple_select",
+      "type": "multiple_choice",
       "text": "Which of the following are void (self-closing) elements in HTML?",
       "timeLimit": 20,
       "points": 1000,
@@ -61,7 +61,7 @@
       ]
     },
     {
-      "type": "multiple_choice",
+      "type": "single_choice",
       "text": "What is the correct HTML for inserting an image?",
       "timeLimit": 15,
       "points": 1000,
@@ -73,7 +73,7 @@
       ]
     },
     {
-      "type": "true_false",
+      "type": "single_choice",
       "text": "HTML5 introduced the <canvas> element for drawing graphics.",
       "timeLimit": 10,
       "points": 1000,
@@ -83,7 +83,7 @@
       ]
     },
     {
-      "type": "multiple_choice",
+      "type": "single_choice",
       "text": "Which doctype declaration is required for an HTML5 document?",
       "timeLimit": 15,
       "points": 1000,
@@ -95,7 +95,7 @@
       ]
     },
     {
-      "type": "multiple_select",
+      "type": "multiple_choice",
       "text": "Which of these are semantic HTML5 elements?",
       "timeLimit": 20,
       "points": 1000,
@@ -107,7 +107,7 @@
       ]
     },
     {
-      "type": "multiple_choice",
+      "type": "single_choice",
       "text": "What is the purpose of the alt attribute on an <img> element?",
       "timeLimit": 15,
       "points": 1000,

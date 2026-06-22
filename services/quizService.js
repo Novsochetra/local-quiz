@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import db from '../db/sqlite.js';
 
-const VALID_TYPES = ['multiple_choice', 'true_false', 'multiple_select'];
+const VALID_TYPES = ['single_choice', 'multiple_choice'];
 
 export function getAllQuizzes() {
   return db.prepare('SELECT * FROM quizzes ORDER BY created_at DESC').all();
@@ -89,12 +89,8 @@ function validateQuestion(q, index) {
     errors.push(`Question ${index + 1}: at least one correct option required`);
   }
 
-  if ((q.type === 'multiple_choice' || q.type === 'true_false') && correctCount !== 1) {
+  if (q.type === 'single_choice' && correctCount !== 1) {
     errors.push(`Question ${index + 1}: exactly one correct option required for ${q.type}`);
-  }
-
-  if (q.type === 'true_false' && q.options.length !== 2) {
-    errors.push(`Question ${index + 1}: true/false must have exactly 2 options`);
   }
 
   return errors;

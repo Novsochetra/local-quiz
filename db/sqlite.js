@@ -14,6 +14,18 @@ const schema = readFileSync(join(__dirname, 'schema.sql'), 'utf-8');
 db.exec(schema);
 
 // Migrations for existing databases
+
+// Migrate old question types to new naming convention
+// Only runs if old-only types (multiple_select, true_false) still exist
+const hasOldOnly = db
+  .prepare("SELECT 1 FROM questions WHERE type IN ('multiple_select', 'true_false') LIMIT 1")
+  .get();
+if (hasOldOnly) {
+  db.prepare("UPDATE questions SET type = 'single_choice' WHERE type = 'multiple_choice'").run();
+  db.prepare("UPDATE questions SET type = 'multiple_choice' WHERE type = 'multiple_select'").run();
+  db.prepare("UPDATE questions SET type = 'single_choice' WHERE type = 'true_false'").run();
+}
+
 const quizColumns = db.prepare('PRAGMA table_info(quizzes)').all();
 if (!quizColumns.find((c) => c.name === 'auto_advance_enabled')) {
   db.prepare(

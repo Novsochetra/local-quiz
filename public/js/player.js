@@ -365,7 +365,7 @@ $('#options-container').addEventListener('click', (e) => {
 
   if (!btn || answered || !currentQuestion) return;
 
-  if (currentQuestion.type === 'multiple_select') {
+  if (currentQuestion.type === 'multiple_choice') {
     toggleMultiSelect(btn);
   } else {
     selectSingleOption(btn);

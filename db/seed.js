@@ -37,7 +37,7 @@ function seedSampleQuiz(hostId) {
 
   const questions = [
     {
-      type: 'multiple_choice',
+      type: 'single_choice',
       text: 'Which color is most associated with cyberpunk neon?',
       timeLimit: 20,
       points: 1000,
@@ -49,7 +49,7 @@ function seedSampleQuiz(hostId) {
       ],
     },
     {
-      type: 'true_false',
+      type: 'single_choice',
       text: 'The Matrix was released in 1999.',
       timeLimit: 15,
       points: 1000,
@@ -59,7 +59,7 @@ function seedSampleQuiz(hostId) {
       ],
     },
     {
-      type: 'multiple_select',
+      type: 'multiple_choice',
       text: 'Which of these are considered cyberpunk authors?',
       timeLimit: 25,
       points: 1000,

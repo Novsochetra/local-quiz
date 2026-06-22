@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS quizzes (
 CREATE TABLE IF NOT EXISTS questions (
   id TEXT PRIMARY KEY,
   quiz_id TEXT NOT NULL,
-  type TEXT NOT NULL CHECK(type IN ('multiple_choice', 'true_false', 'multiple_select')),
+  type TEXT NOT NULL CHECK(type IN ('single_choice', 'multiple_choice')),
   text TEXT NOT NULL,
   media_url TEXT,
   time_limit_sec INTEGER NOT NULL DEFAULT 20,
