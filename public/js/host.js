@@ -686,7 +686,7 @@ function renderHostQuestion(question) {
   container.innerHTML = question.options
     .map(
       (opt) => `
-      <div class="option-btn" data-id="${opt.id}">${opt.text}</div>
+      <div class="option-btn" data-id="${opt.id}">${escapeHtml(opt.text)}</div>
     `
     )
     .join('');

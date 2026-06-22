@@ -1,4 +1,4 @@
-import { $, showScreen, formatNumber } from './utils.js';
+import { $, showScreen, escapeHtml, formatNumber } from './utils.js';
 import { getSocket } from './socket.js';
 import { initAudio, playSound } from './audio.js';
 import { showJoinNotification } from './notifications.js';
@@ -162,7 +162,7 @@ function renderQuestion(question) {
   let html = question.options
     .map(
       (opt) => `
-      <button class="option-btn animate-fade-in" data-id="${opt.id}">${opt.text}</button>
+      <button class="option-btn animate-fade-in" data-id="${opt.id}">${escapeHtml(opt.text)}</button>
     `
     )
     .join('');
