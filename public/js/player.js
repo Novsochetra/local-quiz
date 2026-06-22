@@ -25,6 +25,7 @@ let timerInterval = null;
 let hasInteracted = false;
 let lastAnswerResult = null;
 let splashCountdownInterval = null;
+let isReconnecting = false;
 
 function getCssVar(name) {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -56,7 +57,12 @@ function renderWaitingPlayers(players) {
 
 function switchTo(screenName) {
   Object.values(screens).forEach((s) => s.classList.add('hidden'));
-  screens[screenName].classList.remove('hidden');
+  const target = screens[screenName];
+  target.classList.remove('hidden');
+  const firstFocusable = target.querySelector(
+    'button, input, select, textarea, [tabindex]:not([tabindex="-1"])'
+  );
+  if (firstFocusable) firstFocusable.focus();
 }
 
 function showJoinError(message) {
@@ -79,6 +85,9 @@ function ensureAudio() {
 function joinGame() {
   ensureAudio();
   hideJoinError();
+  isReconnecting = false;
+  sessionStorage.removeItem('quizPin');
+  sessionStorage.removeItem('quizNickname');
   pin = $('#pin-input').value.trim();
   nickname = $('#nickname-input').value.trim();
 
@@ -94,9 +103,9 @@ function joinGame() {
   socket.emit('player:join', { pin, nickname });
 }
 
-function startTimer(durationSec) {
+function startTimer(durationSec, elapsedSec) {
   clearInterval(timerInterval);
-  const start = Date.now();
+  const start = Date.now() - (elapsedSec || 0) * 1000;
   const totalMs = durationSec * 1000;
 
   const fill = $('#timer-fill');
@@ -127,8 +136,11 @@ function startTimer(durationSec) {
   }, 100);
 }
 
-function renderQuestion(question) {
-  answered = false;
+function renderQuestion(question, options) {
+  const hasAnswered = options?.hasAnswered ?? false;
+  const elapsedSec = options?.elapsedSec;
+
+  answered = hasAnswered;
   currentQuestion = question;
   lastAnswerResult = null;
   switchTo('question');
@@ -152,8 +164,13 @@ function renderQuestion(question) {
     if (question.mediaUrl) {
       img.src = question.mediaUrl;
       img.classList.remove('hidden');
+      img.onerror = () => {
+        img.classList.add('hidden');
+        img.onerror = null;
+      };
     } else {
       img.classList.add('hidden');
+      img.onerror = null;
     }
   }
 
@@ -176,17 +193,38 @@ function renderQuestion(question) {
   container.innerHTML = html;
 
   $('#answer-feedback').classList.add('hidden');
-  startTimer(question.timeLimit);
+  startTimer(question.timeLimit, elapsedSec);
+
+  if (hasAnswered) {
+    const buttons = container.querySelectorAll('.option-btn');
+    buttons.forEach((btn) => {
+      btn.disabled = true;
+    });
+    $('#submit-answer-btn').disabled = true;
+    const fb = $('#answer-feedback');
+    fb.textContent = 'ANSWERED';
+    fb.classList.remove('hidden');
+    fb.style.color = 'var(--cyan)';
+  }
 }
 
 function submitAnswer() {
   if (answered || !currentQuestion) return;
-  answered = true;
-
   clearInterval(timerInterval);
 
   const selected = collectSelectedOptions();
-  if (selected.length === 0) return;
+  if (selected.length === 0) {
+    answered = false;
+    const btn = $('#submit-answer-btn');
+    btn.classList.remove('animate-shake');
+    void btn.offsetWidth;
+    btn.classList.add('animate-shake');
+    btn.textContent = 'SELECT AN ANSWER';
+    setTimeout(() => {
+      btn.textContent = 'Submit Answer';
+    }, 1200);
+    return;
+  }
 
   socket.emit('player:answer', {
     questionIndex: currentQuestion.index,
@@ -230,7 +268,17 @@ function toggleMultiSelect(btn) {
 function submitSelected() {
   if (answered) return;
   const selected = collectSelectedOptions();
-  if (selected.length === 0) return;
+  if (selected.length === 0) {
+    const btn = $('#submit-answer-btn');
+    btn.classList.remove('animate-shake');
+    void btn.offsetWidth;
+    btn.classList.add('animate-shake');
+    btn.textContent = 'SELECT AN ANSWER';
+    setTimeout(() => {
+      btn.textContent = 'Submit Answer';
+    }, 1200);
+    return;
+  }
   submitAnswer();
 }
 
@@ -273,7 +321,7 @@ function renderLeaderboard({ leaderboard, currentQuestionIndex, totalQuestions }
       (p) => `
       <div class="leaderboard-item ${p.id === playerId ? 'current-player' : ''}">
         <div class="leaderboard-rank">${p.rank}</div>
-        <div class="leaderboard-name">${p.nickname}</div>
+        <div class="leaderboard-name">${escapeHtml(p.nickname)}</div>
         <div class="leaderboard-score">${p.score.toLocaleString()}</div>
       </div>
     `
@@ -283,8 +331,8 @@ function renderLeaderboard({ leaderboard, currentQuestionIndex, totalQuestions }
   resetResultTerminal();
 }
 
-function resetResultTerminal() {
-  $('#result-terminal-text').textContent = 'WAITING_FOR_HOST...';
+function resetResultTerminal(text) {
+  $('#result-terminal-text').textContent = text || 'WAITING_FOR_NEXT_QUESTION...';
 }
 
 function resetSplashCountdown() {
@@ -376,9 +424,13 @@ $('#options-container').addEventListener('click', (e) => {
 socket.on('player:joined', ({ playerId: id, nickname: nick }) => {
   playerId = id;
   nickname = nick;
+  sessionStorage.setItem('quizPin', pin);
+  sessionStorage.setItem('quizNickname', nick);
   $('#waiting-nickname').textContent = nick;
   $('#waiting-pin').textContent = pin;
-  switchTo('waiting');
+  if (!isReconnecting) {
+    switchTo('waiting');
+  }
 });
 
 socket.on('server:lobby-update', ({ players: lobbyPlayers }) => {
@@ -392,7 +444,11 @@ socket.on('server:player-joined', ({ nickname: joinedNickname }) => {
 });
 
 socket.on('player:join-error', ({ message }) => {
+  isReconnecting = false;
+  sessionStorage.removeItem('quizPin');
+  sessionStorage.removeItem('quizNickname');
   showJoinError(message);
+  switchTo('join');
 });
 
 socket.on('player:kicked', () => {
@@ -446,12 +502,75 @@ socket.on('server:error', ({ message }) => {
   alert(`Error: ${message}`);
 });
 
+socket.on('player:reconnect-state', (state) => {
+  isReconnecting = false;
+  switch (state.screen) {
+    case 'waiting':
+      switchTo('waiting');
+      break;
+    case 'splash':
+      renderSplash(state);
+      break;
+    case 'question': {
+      const elapsedSec =
+        state.timeRemaining !== undefined
+          ? Math.max(0, state.question.timeLimit - state.timeRemaining)
+          : undefined;
+      renderQuestion(state.question, { hasAnswered: state.hasAnswered, elapsedSec });
+      break;
+    }
+    case 'reveal': {
+      renderQuestion(state.question, { hasAnswered: true, elapsedSec: state.question.timeLimit });
+      const { correctOptionIds } = state;
+      const buttons = $('#options-container').querySelectorAll('.option-btn');
+      buttons.forEach((btn) => {
+        btn.disabled = true;
+        btn.classList.remove('selected');
+        if (correctOptionIds.includes(btn.dataset.id)) {
+          btn.classList.add('correct');
+        }
+      });
+      break;
+    }
+    case 'leaderboard':
+      renderLeaderboard(state);
+      break;
+    case 'gameOver':
+      renderGameOver(state.podium, state.leaderboard);
+      break;
+  }
+});
+
+socket.on('server:host-disconnected', ({ message }) => {
+  sessionStorage.removeItem('quizPin');
+  sessionStorage.removeItem('quizNickname');
+  alert(message);
+  location.reload();
+});
+
 // Pre-fill PIN from URL query param
 const params = new URLSearchParams(window.location.search);
 const pinParam = params.get('pin');
 if (pinParam) {
   $('#pin-input').value = pinParam;
   $('#nickname-input').focus();
+}
+
+// Auto-rejoin if stored session exists (page refresh)
+const savedPin = sessionStorage.getItem('quizPin');
+const savedNickname = sessionStorage.getItem('quizNickname');
+if (savedPin && savedNickname) {
+  pin = savedPin;
+  nickname = savedNickname;
+  isReconnecting = true;
+  if (socket.connected) {
+    socket.emit('player:rejoin', { pin, nickname });
+  } else {
+    socket.on('connect', function onReconnect() {
+      socket.off('connect', onReconnect);
+      socket.emit('player:rejoin', { pin, nickname });
+    });
+  }
 }
 
 // Init

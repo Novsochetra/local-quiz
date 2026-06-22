@@ -149,6 +149,11 @@
   text-shadow: 0 0 10px var(--cyan);
 }
 
+.option-btn:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+
 .option-btn:disabled {
   cursor: default;
 }
@@ -161,10 +166,20 @@
   text-shadow: 0 0 8px var(--green);
 }
 
+.option-btn.correct::before {
+  content: '✓ ';
+  color: var(--green);
+}
+
 .option-btn.wrong {
   border-color: var(--red);
   background: var(--red-soft);
   opacity: 0.6;
+  color: var(--red);
+}
+
+.option-btn.wrong::before {
+  content: '✗ ';
   color: var(--red);
 }
 
@@ -779,6 +794,14 @@
   }
 }
 
+.splash-countdown.splash-go {
+  animation: splash-pop 0.4s ease-out;
+}
+
+.splash-countdown.splash-go::after {
+  content: '!';
+}
+
 @media (max-width: 480px) {
   .splash-countdown {
     font-size: 5rem;
@@ -786,9 +809,14 @@
 }
 
 #result-leaderboard .leaderboard-item.current-player {
-  background: rgba(0, 243, 255, 0.08);
+  background: rgba(0, 243, 255, 0.12);
   border-color: var(--cyan);
-  box-shadow: 0 0 15px rgba(0, 243, 255, 0.15);
+  box-shadow: 0 0 20px rgba(0, 243, 255, 0.2);
+}
+
+.leaderboard-item.current-player .leaderboard-name::before {
+  content: '► ';
+  color: var(--cyan);
 }
 
 .delete-quiz-btn {
@@ -856,8 +884,8 @@
 }
 
 .host-player-status-dot {
-  width: 8px;
-  height: 8px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   flex-shrink: 0;
 }
@@ -969,8 +997,8 @@
 }
 
 .qrcode-image {
-  width: 140px;
-  height: 140px;
+  width: 200px;
+  height: 200px;
   border: 1px solid var(--border);
   padding: 6px;
   background: #0a0a1a;
@@ -993,6 +1021,41 @@
   .pin-card .pin-display {
     font-size: 3rem;
   }
+}
+
+.connection-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+  padding: 8px 16px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  transform: translateY(-100%);
+  transition: transform 0.3s ease-out;
+}
+
+.connection-banner.show {
+  transform: translateY(0);
+}
+
+.connection-banner.disconnected {
+  background: var(--red-soft);
+  color: var(--red);
+  border-bottom: 1px solid var(--red);
+  box-shadow: 0 0 20px rgba(255, 42, 109, 0.3);
+}
+
+.connection-banner.reconnecting {
+  background: rgba(255, 230, 0, 0.1);
+  color: var(--yellow);
+  border-bottom: 1px solid var(--yellow);
+  box-shadow: 0 0 20px rgba(255, 230, 0, 0.2);
 }
 
 @media (max-width: 600px) {

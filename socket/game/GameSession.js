@@ -7,6 +7,7 @@ import {
   getPlayers as getPlayersDb,
   removePlayer as removePlayerDb,
   finishSession,
+  updatePlayerSocket,
 } from '../../services/gameService.js';
 import { config } from '../../config/config.js';
 import { QuestionEngine } from './QuestionEngine.js';
@@ -43,17 +44,20 @@ export class GameSession {
   }
 
   addPlayer(socketId, nickname) {
+    const existing = this.players.find((p) => p.nickname === nickname);
+    if (existing) {
+      existing.socket_id = socketId;
+      existing.connected = true;
+      updatePlayerSocket(existing.id, socketId);
+      return existing;
+    }
+
     if (this.players.length >= this.maxPlayers) {
       throw new Error('Session is full');
     }
-    if (this.status !== 'waiting') {
-      throw new Error('Game has already started');
-    }
-    if (this.players.some((p) => p.nickname === nickname)) {
-      throw new Error('Nickname already taken in this session');
-    }
 
     const playerData = addPlayerDb(this.id, socketId, nickname);
+    playerData.connected = true;
     this.players.push(playerData);
     return playerData;
   }
@@ -74,6 +78,17 @@ export class GameSession {
     const [player] = this.players.splice(index, 1);
     removePlayerDb(player.id);
     return player;
+  }
+
+  markDisconnected(socketId) {
+    const player = this.players.find((p) => p.socket_id === socketId);
+    if (player) {
+      player.connected = false;
+    }
+  }
+
+  getConnectedCount() {
+    return this.players.filter((p) => p.connected).length;
   }
 
   getPlayerBySocket(socketId) {

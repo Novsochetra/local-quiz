@@ -1,8 +1,6 @@
 import { checkAnswer, calculateScore } from './Scoring.js';
 import { saveAnswer, updatePlayerScore } from '../../services/gameService.js';
 
-const ANSWER_REVEAL_DELAY_MS = 2000;
-
 export class QuestionEngine {
   constructor(session, io) {
     this.session = session;
@@ -12,7 +10,7 @@ export class QuestionEngine {
     this.timer = null;
     this.answeredPlayers = new Set();
     this.optionSelectionCounts = new Map();
-    this.phase = 'idle'; // idle | countdown | question | reveal | leaderboard
+    this.phase = 'idle'; // idle | countdown | question | reveal | leaderboard | finished
   }
 
   start() {
@@ -112,7 +110,8 @@ export class QuestionEngine {
     this.emitHostAnswerUpdate();
 
     const allAnswered =
-      this.session.players.length > 0 && this.answeredPlayers.size >= this.session.players.length;
+      this.session.getConnectedCount() > 0 &&
+      this.answeredPlayers.size >= this.session.getConnectedCount();
     if (allAnswered) {
       clearTimeout(this.timer);
       this.revealAnswer();
@@ -120,7 +119,7 @@ export class QuestionEngine {
   }
 
   emitHostAnswerUpdate() {
-    const totalPlayers = this.session.players.length;
+    const totalPlayers = this.session.getConnectedCount();
     const players = this.session.players.map((p) => ({
       id: p.id,
       nickname: p.nickname,
@@ -173,6 +172,81 @@ export class QuestionEngine {
     });
 
     this.session.finish(leaderboard);
+  }
+
+  getReconnectState(playerId) {
+    const totalQuestions = this.session.quiz.questions.length;
+    const player = this.session.getPlayerById(playerId);
+
+    const getQuestionData = (q) => ({
+      index: this.currentQuestionIndex,
+      totalQuestions,
+      type: q.type,
+      text: q.text,
+      mediaUrl: q.media_url,
+      timeLimit: q.time_limit_sec,
+      points: q.points,
+      playerLayout: this.session.quiz.player_layout || 'default',
+      options: q.options.map((o) => ({ id: o.id, text: o.text })),
+    });
+
+    switch (this.phase) {
+      case 'idle':
+      case 'countdown':
+        return {
+          screen: 'splash',
+          currentQuestionIndex: this.currentQuestionIndex,
+          totalQuestions,
+        };
+
+      case 'question': {
+        const q = this.session.quiz.questions[this.currentQuestionIndex];
+        const elapsed = (Date.now() - this.questionStartTime) / 1000;
+        const timeRemaining = Math.max(0, Math.ceil(q.time_limit_sec - elapsed));
+        const hasAnswered = this.answeredPlayers.has(playerId);
+        return {
+          screen: 'question',
+          question: getQuestionData(q),
+          timeRemaining,
+          hasAnswered,
+        };
+      }
+
+      case 'reveal': {
+        const q = this.session.quiz.questions[this.currentQuestionIndex];
+        const correctIds = q.options.filter((o) => o.is_correct === 1).map((o) => o.id);
+        const hasAnswered = this.answeredPlayers.has(playerId);
+        return {
+          screen: 'reveal',
+          question: getQuestionData(q),
+          correctOptionIds: correctIds,
+          hasAnswered,
+          playerScore: player ? player.score : 0,
+        };
+      }
+
+      case 'leaderboard': {
+        const leaderboard = this.session.getLeaderboard();
+        return {
+          screen: 'leaderboard',
+          leaderboard,
+          currentQuestionIndex: this.currentQuestionIndex,
+          totalQuestions,
+        };
+      }
+
+      case 'finished': {
+        const leaderboard = this.session.getLeaderboard();
+        return {
+          screen: 'gameOver',
+          podium: leaderboard.slice(0, 3),
+          leaderboard,
+        };
+      }
+
+      default:
+        return { screen: 'waiting' };
+    }
   }
 
   destroy() {

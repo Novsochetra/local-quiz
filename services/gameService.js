@@ -93,6 +93,10 @@ export function updatePlayerScore(playerId, score) {
   return getPlayerById(playerId);
 }
 
+export function updatePlayerSocket(playerId, socketId) {
+  db.prepare('UPDATE players SET socket_id = ? WHERE id = ?').run(socketId, playerId);
+}
+
 export function saveAnswer(playerId, questionId, selectedOptions, isCorrect, scoreEarned) {
   const id = uuidv4();
   db.prepare(

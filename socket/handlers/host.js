@@ -21,6 +21,11 @@ export function registerHostHandlers(socket, io) {
       if (!quiz) {
         return socket.emit('server:error', { message: 'Quiz not found' });
       }
+      if (!quiz.questions || quiz.questions.length === 0) {
+        return socket.emit('server:error', {
+          message: 'Quiz has no questions. Add questions first.',
+        });
+      }
 
       const session = new GameSession(quiz);
       session.setIo(io);
@@ -132,5 +137,20 @@ export function registerHostHandlers(socket, io) {
     } catch (err) {
       console.error('host:auto-advance-cancelled error:', err.message);
     }
+  });
+
+  socket.on('disconnect', () => {
+    if (!socket.data.isHost) return;
+    const pin = socket.data.sessionPin;
+    if (!pin) return;
+    const session = GameSession.getByPin(pin);
+    if (!session) return;
+
+    io.to(pin).emit('server:host-disconnected', {
+      message: 'The host has disconnected. The game has ended.',
+    });
+
+    session.destroy();
+    GameSession.remove(pin);
   });
 }

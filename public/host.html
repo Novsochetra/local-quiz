@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="/css/components.css" />
   </head>
   <body>
+    <a href="#app" class="skip-link">Skip to content</a>
     <div id="app">
       <section id="login-screen" class="screen active centered">
         <div class="container">
@@ -150,7 +151,7 @@
               "
             >
               <div></div>
-              <div id="host-timer" class="countdown-number" style="font-size: 2.5rem">0</div>
+              <div id="host-timer" class="countdown-number" style="font-size: 3.5rem">0</div>
             </div>
 
             <div class="cyber-card" style="margin-bottom: 1rem">
@@ -175,7 +176,10 @@
             </header>
             <div id="host-leaderboard" class="leaderboard-list"></div>
 
-            <div style="text-align: center; margin-top: 2rem">
+            <div id="auto-advance-bar" class="timer-bar hidden" style="margin-top: 2rem">
+              <div id="auto-advance-fill" class="timer-bar-fill" style="width: 0%"></div>
+            </div>
+            <div style="text-align: center; margin-top: 1rem">
               <button id="next-question-btn" class="cyber-btn large">NEXT QUESTION</button>
             </div>
           </div>

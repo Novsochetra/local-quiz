@@ -23,7 +23,12 @@ let currentHostPlayers = [];
 
 function switchTo(screenName) {
   Object.values(screens).forEach((s) => s.classList.add('hidden'));
-  screens[screenName].classList.remove('hidden');
+  const target = screens[screenName];
+  target.classList.remove('hidden');
+  const firstFocusable = target.querySelector(
+    'button, input, select, textarea, [tabindex]:not([tabindex="-1"])'
+  );
+  if (firstFocusable) firstFocusable.focus();
 }
 
 function showError(id, message) {
@@ -36,11 +41,18 @@ function hideError(id) {
   $(id).classList.add('hidden');
 }
 
+function setLoading(btnId, loading, text, normalText) {
+  const btn = $(btnId);
+  btn.disabled = loading;
+  btn.textContent = loading ? text : normalText;
+}
+
 async function login() {
   hideError('#login-error');
   const username = $('#host-username').value.trim();
   const password = $('#host-password').value;
 
+  setLoading('#login-btn', true, 'LOADING...', 'ENTER');
   try {
     const data = await api('/api/auth/login', {
       method: 'POST',
@@ -52,6 +64,8 @@ async function login() {
     switchTo('dashboard');
   } catch (err) {
     showError('#login-error', err.message);
+  } finally {
+    setLoading('#login-btn', false, 'LOADING...', 'ENTER');
   }
 }
 
@@ -84,7 +98,7 @@ function renderQuizList(quizzes) {
       <div class="cyber-card animate-fade-in" style="margin-bottom: 1rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
           <div style="flex: 1; min-width: 0;">
-            <h4 style="margin: 0; color: var(--neon-cyan);">${q.title}</h4>
+            <h4 style="margin: 0; color: var(--cyan);">${q.title}</h4>
             <p style="margin: 0.5rem 0 0; color: var(--text-dim); font-size: 0.9rem;">${q.description || 'No description'}</p>
           </div>
           <div class="quiz-actions">
@@ -149,6 +163,7 @@ async function importQuiz() {
     return;
   }
 
+  setLoading('#import-btn', true, 'IMPORTING...', 'IMPORT');
   try {
     const data = JSON.parse(raw);
     await api('/api/quizzes/import', {
@@ -161,6 +176,8 @@ async function importQuiz() {
     await loadDashboard();
   } catch (err) {
     showError('#import-error', err.message);
+  } finally {
+    setLoading('#import-btn', false, 'IMPORTING...', 'IMPORT');
   }
 }
 
@@ -295,6 +312,7 @@ async function saveQuizSettings() {
     }
   }
 
+  setLoading('#quiz-settings-save', true, 'SAVING...', 'SAVE');
   try {
     await api(`/api/quizzes/${currentSettingsQuiz.id}`, {
       method: 'PUT',
@@ -324,6 +342,8 @@ async function saveQuizSettings() {
     }, 800);
   } catch (err) {
     showError('#quiz-settings-error', err.message);
+  } finally {
+    setLoading('#quiz-settings-save', false, 'SAVING...', 'SAVE');
   }
 }
 
@@ -346,6 +366,10 @@ function showResultsList() {
 
 async function openQuizResults(quizId) {
   currentResultsQuizId = quizId;
+  $('#results-modal-title').textContent = 'Loading...';
+  $('#results-list').innerHTML =
+    '<p style="color: var(--text-dim); text-align: center; padding: 24px 0;">Loading sessions...</p>';
+  $('#quiz-results-modal').classList.add('active');
   try {
     const [quiz, sessions] = await Promise.all([
       api(`/api/quizzes/${quizId}`),
@@ -353,9 +377,9 @@ async function openQuizResults(quizId) {
     ]);
     $('#results-modal-title').textContent = quiz.title;
     renderSessionList(sessions);
-    $('#quiz-results-modal').classList.add('active');
   } catch (err) {
-    alert(`Failed to load results: ${err.message}`);
+    $('#results-list').innerHTML =
+      `<p style="color: var(--red); text-align: center; padding: 24px 0;">Failed to load results: ${escapeHtml(err.message)}</p>`;
   }
 }
 
@@ -530,7 +554,7 @@ function renderLobby(players) {
       (p) => `
       <div class="player-chip" style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;">
         <span>${p.nickname}</span>
-        <button class="kick-btn" data-id="${p.id}" style="background: transparent; border: none; color: var(--neon-red); cursor: pointer; font-weight: 700;">×</button>
+        <button class="kick-btn" data-id="${p.id}" style="background: transparent; border: none; color: var(--red); cursor: pointer; font-weight: 700;">×</button>
       </div>
     `
     )
@@ -577,6 +601,8 @@ function cancelAutoAdvance() {
     autoAdvanceCountdownInterval = null;
   }
 
+  $('#auto-advance-bar').classList.add('hidden');
+
   const btn = $('#next-question-btn');
   btn.textContent = 'NEXT QUESTION';
   btn.disabled = false;
@@ -592,13 +618,27 @@ function startAutoAdvance() {
   const seconds = getAutoAdvanceDelay();
   const btn = $('#next-question-btn');
   let remaining = seconds;
+  const totalMs = seconds * 1000;
+  const start = Date.now();
 
   btn.textContent = `NEXT QUESTION (${remaining})`;
+
+  const bar = $('#auto-advance-bar');
+  const fill = $('#auto-advance-fill');
+  bar.classList.remove('hidden');
+  fill.style.width = '100%';
+  fill.classList.remove('warning');
 
   socket.emit('host:auto-advance-started', { seconds });
 
   autoAdvanceCountdownInterval = setInterval(() => {
-    remaining--;
+    const elapsed = Date.now() - start;
+    remaining = Math.max(0, Math.ceil((totalMs - elapsed) / 1000));
+    const pct = (Math.max(0, totalMs - elapsed) / totalMs) * 100;
+
+    fill.style.width = `${pct}%`;
+    if (pct < 30) fill.classList.add('warning');
+
     if (remaining > 0) {
       btn.textContent = `NEXT QUESTION (${remaining})`;
     } else {
@@ -606,7 +646,7 @@ function startAutoAdvance() {
       autoAdvanceCountdownInterval = null;
       btn.textContent = 'NEXT QUESTION';
     }
-  }, 1000);
+  }, 100);
 
   autoAdvanceTimer = setTimeout(() => {
     autoAdvanceTimer = null;
@@ -737,7 +777,7 @@ function renderLeaderboard(leaderboard) {
       (p) => `
       <div class="leaderboard-item">
         <div class="leaderboard-rank">${p.rank}</div>
-        <div class="leaderboard-name">${p.nickname}</div>
+        <div class="leaderboard-name">${escapeHtml(p.nickname)}</div>
         <div class="leaderboard-score">${p.score.toLocaleString()}</div>
       </div>
     `
@@ -772,7 +812,7 @@ function renderGameOver(podium, leaderboard) {
       (p) => `
       <div class="leaderboard-item">
         <div class="leaderboard-rank">${p.rank}</div>
-        <div class="leaderboard-name">${p.nickname}</div>
+        <div class="leaderboard-name">${escapeHtml(p.nickname)}</div>
         <div class="leaderboard-score">${p.score.toLocaleString()}</div>
       </div>
     `

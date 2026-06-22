@@ -88,7 +88,7 @@ const socket = window.io();
 ### Game flow
 
 1. Host logs in and creates a session from a quiz.
-2. Server generates a 6-digit PIN.
+2. Server generates a 6-digit PIN (validates quiz has questions).
 3. Players join with PIN + nickname.
 4. Host starts the game from the lobby.
 5. Server shows a configurable splash countdown before each question.
@@ -96,6 +96,43 @@ const socket = window.io();
 7. Server reveals correct answers and emits leaderboards as a separate screen.
 8. Host advances to the next question (splash countdown repeats).
 9. After the final question, the server emits final results and saves them.
+
+### Socket disconnect handling
+
+- **Connection banner**: A fixed banner at the top of the page shows connection status (`disconnected` / `reconnecting`). Defined in `socket.js`.
+- **Host disconnect**: If the host's socket disconnects mid-game, the session is destroyed and all players receive `server:host-disconnected` and are redirected.
+- **Player disconnect during game**: Players are NOT removed from the session during active gameplay. They are marked `connected: false` via `markDisconnected(socketId)`. This preserves their score and answered state for reconnection.
+- **Player disconnect in lobby**: Players ARE fully removed on disconnect (removed from in-memory array and DB).
+
+### Player reconnection
+
+When a player refreshes the page mid-game, they auto-rejoin and restore their correct screen:
+
+1. On successful join (`player:joined`), `pin` and `nickname` are stored in `sessionStorage`.
+2. On page load, if saved credentials exist, the client emits `player:rejoin` (instead of `player:join`).
+3. Server finds the existing player by nickname, updates their `socket_id` (preserving score + answers), and calls `engine.getReconnectState(playerId)`.
+4. Server sends `player:reconnect-state` with the current screen + data.
+5. Client restores the correct screen based on the state:
+   - `splash` — countdown between questions
+   - `question` — question with remaining timer; if `hasAnswered=true`, options are disabled
+   - `reveal` — correct answers highlighted
+   - `leaderboard` — round results
+   - `gameOver` — final podium
+   - `waiting` — lobby (game not started)
+
+The `allAnswered` check in `QuestionEngine` uses `session.getConnectedCount()` (only connected players) instead of `session.players.length` (all players including disconnected) to avoid the game stalling or advancing incorrectly when players are mid-reconnect.
+
+### Reconnection race conditions
+
+| Scenario                                            | Resolution                                                                                                                       |
+| --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| New `player:rejoin` arrives before old `disconnect` | `addPlayer` finds existing player, updates socket_id. Old disconnect fires later with stale socket_id — no player matched, no-op |
+| Old `disconnect` arrives before new `rejoin`        | Player marked disconnected. `addPlayer` finds existing (still in array), resets connected=true                                   |
+| Socket reconnects but session expired               | `player:join-error` → clears sessionStorage, shows join form                                                                     |
+
+### Loading states
+
+All async operations disable their trigger button and show a `LOADING...` / `IMPORTING...` / `SAVING...` text. Use the `setLoading(btnId, loading, text, normalText)` helper.
 
 ### Adding a new feature
 
